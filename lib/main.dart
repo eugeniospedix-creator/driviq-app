@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'core/theme.dart';
-import 'screens/shell.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() => runApp(const DriviqApp());
+import 'app.dart';
+import 'presentation/providers/bootstrap_provider.dart';
+import 'presentation/providers/repository_providers.dart';
 
-class DriviqApp extends StatelessWidget {
-  const DriviqApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final store = await bootstrapHive();
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Driviq',
-      debugShowCheckedModeBanner: false,
-      theme: DriviqTheme.light,
-      home: const DriviqShell(),
-    );
-  }
+  runApp(
+    ProviderScope(
+      overrides: [hiveStoreProvider.overrideWithValue(store)],
+      child: const DriviqApp(),
+    ),
+  );
 }
