@@ -15,11 +15,13 @@ class AudioFrame {
     required this.amplitudes,
     required this.frequencies,
     required this.timestamp,
+    this.rms = 0,
   });
 
   final List<double> amplitudes;
   final List<double> frequencies;
   final DateTime timestamp;
+  final double rms;
 }
 
 /// On-device and hybrid diagnosis orchestration.

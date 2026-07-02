@@ -66,10 +66,11 @@ class ReportScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
                       child: Column(
                         children: [
-                          VehicleViewer(
+                          InteractiveVehicleViewer(
                             vehicle: vehicle,
                             height: 300,
                             interactive: true,
+                            showViewModes: true,
                             faults: faults,
                             highlightedFault: selected,
                             onFaultSelected: (f) =>

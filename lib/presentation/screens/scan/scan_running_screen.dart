@@ -12,7 +12,7 @@ import '../../../services/interfaces/diagnosis_services.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/scan/scan_visuals.dart';
 import '../../widgets/scan/scan_waveform_panel.dart';
-import '../../widgets/vehicle/vehicle_viewer.dart';
+import '../../widgets/vehicle/interactive_vehicle_viewer.dart';
 
 class ScanRunningScreen extends ConsumerStatefulWidget {
   const ScanRunningScreen({super.key});
@@ -58,8 +58,8 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
       ref.invalidate(vehicleHealthProvider(vehicle.id));
       ref.invalidate(garageOverviewProvider);
 
-      if (!mounted) return;
-      context.go(AppRoutes.report);
+    if (!mounted) return;
+    context.pushReplacement(AppRoutes.diagnosisResult);
       return;
     } on AppException catch (error) {
       if (!mounted) return;
@@ -113,10 +113,10 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
                   data: (vehicle) => vehicle == null
                       ? const SizedBox()
                       : RepaintBoundary(
-                          child: VehicleViewer(
+                          child: InteractiveVehicleViewer(
                             vehicle: vehicle,
                             scanning: _running,
-                            height: double.infinity,
+                            showGlow: true,
                           ),
                         ),
                 ),

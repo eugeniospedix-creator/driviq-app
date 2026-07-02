@@ -8,6 +8,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/vehicle.dart';
 import '../../../domain/errors/app_exception.dart';
+import '../../providers/repository_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
@@ -100,7 +101,16 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       );
       return;
     }
-    context.push(AppRoutes.scanRunning);
+
+    Future<void>(() async {
+      final granted = await ref.read(microphonePermissionServiceProvider).isGranted;
+      if (!mounted) return;
+      if (granted) {
+        context.push(AppRoutes.scanRunning);
+      } else {
+        context.push(AppRoutes.scanPermission);
+      }
+    });
   }
 
   @override
@@ -152,7 +162,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
               child: Column(
                 children: [
                   if (vehicle != null)
-                    VehicleViewer(vehicle: vehicle, height: 240)
+                    InteractiveVehicleViewer(vehicle: vehicle, height: 240)
                   else
                     const SizedBox(height: 240),
                   const SizedBox(height: 16),

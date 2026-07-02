@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../presentation/screens/diagnosis/diagnosis_result_screen.dart';
 import '../../presentation/screens/garage/garage_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
 import '../../presentation/screens/report/report_screen.dart';
+import '../../presentation/screens/scan/mic_permission_screen.dart';
 import '../../presentation/screens/scan/scan_running_screen.dart';
 import '../../presentation/screens/scan/scan_screen.dart';
 import '../../presentation/screens/settings/settings_screen.dart';
@@ -65,6 +67,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: AppRoutes.scanPermission,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const MicPermissionScreen(),
+          transitionsBuilder: (context, animation, secondary, child) => FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
         path: AppRoutes.scanRunning,
         parentNavigatorKey: rootNavigatorKey,
         pageBuilder: (context, state) => CustomTransitionPage(
@@ -73,6 +86,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             return FadeTransition(
               opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
               child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.diagnosisResult,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const DiagnosisResultScreen(),
+          transitionsBuilder: (context, animation, secondary, child) {
+            return SlideTransition(
+              position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+              child: FadeTransition(opacity: animation, child: child),
             );
           },
         ),

@@ -6,7 +6,7 @@ import '../../../domain/entities/vehicle.dart';
 import '../../../domain/entities/vehicle_health.dart';
 import '../health/health_ring.dart';
 import '../shell/dq_page.dart';
-import '../vehicle/vehicle_viewer.dart';
+import '../vehicle/interactive_vehicle_viewer.dart';
 
 class VehicleGarageCard extends StatelessWidget {
   const VehicleGarageCard({
@@ -73,9 +73,10 @@ class VehicleGarageCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: compact ? 14 : 18),
-            VehicleViewer(
+            InteractiveVehicleViewer(
               vehicle: vehicle,
               height: compact ? 140 : 200,
+              interactive: false,
             ),
             const SizedBox(height: 14),
             Row(

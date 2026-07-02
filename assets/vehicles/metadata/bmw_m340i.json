@@ -1,0 +1,41 @@
+{
+  "assetKey": "bmw_m340i",
+  "bodyType": "sport_sedan",
+  "stagingLabel": "Sport Sedan Twin",
+  "glbAssetPath": "assets/vehicles/staging/sport_sedan.glb",
+  "anchors": [
+    {
+      "componentId": "engine",
+      "positions": {
+        "exterior": { "x": 0.62, "y": 0.40, "z": 0.10 },
+        "engine": { "x": 0.50, "y": 0.46, "z": 0.18 }
+      }
+    },
+    {
+      "componentId": "front_right",
+      "positions": {
+        "exterior": { "x": 0.27, "y": 0.67, "z": 0.06 },
+        "suspension": { "x": 0.29, "y": 0.71, "z": 0.03 }
+      }
+    },
+    {
+      "componentId": "brakes",
+      "positions": {
+        "exterior": { "x": 0.37, "y": 0.68, "z": 0.05 }
+      }
+    },
+    {
+      "componentId": "suspension",
+      "positions": {
+        "exterior": { "x": 0.74, "y": 0.68, "z": 0.05 },
+        "suspension": { "x": 0.71, "y": 0.64, "z": 0.11 }
+      }
+    },
+    {
+      "componentId": "exhaust",
+      "positions": {
+        "exterior": { "x": 0.84, "y": 0.49, "z": 0.07 }
+      }
+    }
+  ]
+}
