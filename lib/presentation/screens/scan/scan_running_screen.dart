@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../application/providers/usecase_providers.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
+import '../../../domain/errors/app_exception.dart';
 import '../../../services/interfaces/diagnosis_services.dart';
-import '../../providers/repository_providers.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/scan/scan_visuals.dart';
+import '../../widgets/scan/scan_waveform_panel.dart';
 import '../../widgets/vehicle/vehicle_viewer.dart';
 
 class ScanRunningScreen extends ConsumerStatefulWidget {
@@ -22,8 +24,7 @@ class ScanRunningScreen extends ConsumerStatefulWidget {
 class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
   String _stageLabel = 'Initializing sensors…';
   double _progress = 0;
-  List<double> _amps = List.filled(24, 0.1);
-  StreamSubscription<AudioFrame>? _audioSub;
+  bool _running = true;
 
   @override
   void initState() {
@@ -33,45 +34,54 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
 
   Future<void> _runScan() async {
     final vehicle = await ref.read(primaryVehicleProvider.future);
-    if (!mounted || vehicle == null) {
-      if (mounted) context.go(AppRoutes.scan);
+    if (!mounted) return;
+    if (vehicle == null) {
+      context.go(AppRoutes.scan);
       return;
     }
 
-    final audio = ref.read(audioAnalysisServiceProvider);
-    final ai = ref.read(aiDiagnosisServiceProvider);
-
-    await audio.start();
-    _audioSub = audio.frames.listen((frame) {
-      if (!mounted) return;
-      setState(() => _amps = frame.amplitudes);
-    });
-
+    final useCase = ref.read(runScanUseCaseProvider);
     final stages = <DiagnosisStage>[];
-    await for (final stage in ai.analyze(vehicle: vehicle, audioFrames: audio.frames)) {
+
+    try {
+      await for (final stage in useCase.analyze(vehicle)) {
+        if (!mounted) return;
+        setState(() {
+          _stageLabel = stage.label;
+          _progress = stage.progress;
+        });
+        stages.add(stage);
+      }
+
+      await useCase.complete(vehicle, stages);
+      ref.invalidate(latestScanProvider(vehicle.id));
+      ref.invalidate(vehicleHealthProvider(vehicle.id));
+      ref.invalidate(garageOverviewProvider);
+
       if (!mounted) return;
-      setState(() {
-        _stageLabel = stage.label;
-        _progress = stage.progress;
-      });
-      stages.add(stage);
+      context.go(AppRoutes.report);
+      return;
+    } on AppException catch (error) {
+      if (!mounted) return;
+      _showFailure(error.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showFailure('Scan could not be completed. Please try again.');
+    } finally {
+      await useCase.cancel();
+      if (mounted) setState(() => _running = false);
     }
-    await audio.stop();
-
-    final session = await ai.buildSession(vehicle: vehicle, stages: stages);
-    await ref.read(diagnosisRepositoryProvider).save(session);
-    ref.invalidate(latestScanProvider(vehicle.id));
-    ref.invalidate(vehicleHealthProvider(vehicle.id));
-    ref.read(activeScanSessionProvider.notifier).state = session;
-
-    if (!mounted) return;
-    context.go(AppRoutes.report);
   }
 
-  @override
-  void dispose() {
-    _audioSub?.cancel();
-    super.dispose();
+  void _showFailure(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: DQ.graphite3,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    context.go(AppRoutes.scan);
   }
 
   @override
@@ -87,7 +97,7 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
             children: [
               const SizedBox(height: 12),
               Text(
-                'DRIVIQ CORE'.toUpperCase(),
+                'DRIVIQ CORE',
                 style: const TextStyle(
                   color: DQ.textMuted,
                   letterSpacing: 2.4,
@@ -99,18 +109,20 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
               Expanded(
                 child: vehicleAsync.when(
                   loading: () => const SizedBox(),
-                  error: (_, __) => const SizedBox(),
+                  error: (_, _) => const SizedBox(),
                   data: (vehicle) => vehicle == null
                       ? const SizedBox()
-                      : VehicleViewer(
-                          vehicle: vehicle,
-                          scanning: true,
-                          height: double.infinity,
+                      : RepaintBoundary(
+                          child: VehicleViewer(
+                            vehicle: vehicle,
+                            scanning: _running,
+                            height: double.infinity,
+                          ),
                         ),
                 ),
               ),
               const SizedBox(height: 20),
-              AudioWaveform(amplitudes: _amps),
+              if (_running) const ScanWaveformPanel(),
               const SizedBox(height: 24),
               Text(
                 _stageLabel,

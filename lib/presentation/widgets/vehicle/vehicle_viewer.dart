@@ -61,7 +61,7 @@ class _VehicleViewerState extends ConsumerState<VehicleViewer> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final renderer = ref.watch(vehicleRendererProvider);
+    final renderer = ref.read(vehicleRendererProvider);
     return SizedBox(
       height: widget.height,
       width: double.infinity,

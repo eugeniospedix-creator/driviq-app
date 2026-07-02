@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/component_fault.dart';
-import '../../../domain/enums/fault_severity.dart';
+import '../../../core/visuals/fault_severity_colors.dart';
 
 class DiagnosisMetric extends StatelessWidget {
   const DiagnosisMetric({
@@ -50,12 +50,7 @@ class FaultDetailCard extends StatelessWidget {
 
   final ComponentFault fault;
 
-  Color get _color => switch (fault.severity) {
-        FaultSeverity.normal => DQ.emerald,
-        FaultSeverity.monitor => DQ.cyan,
-        FaultSeverity.attention => DQ.amber,
-        FaultSeverity.critical => DQ.coral,
-      };
+  Color get _color => FaultSeverityColors.accent(fault.severity);
 
   @override
   Widget build(BuildContext context) {

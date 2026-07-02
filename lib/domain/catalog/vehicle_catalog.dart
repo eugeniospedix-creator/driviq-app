@@ -1,7 +1,15 @@
 import '../../domain/entities/vehicle_catalog_entry.dart';
 
-/// Canonical vehicle catalog — each entry maps to a future GLB asset.
+/// Canonical vehicle catalog — domain knowledge mapping make/model to 3D assets.
 abstract final class VehicleCatalog {
+  static const genericSedan = VehicleCatalogEntry(
+    assetKey: 'generic_sedan',
+    make: 'Generic',
+    model: 'Sedan',
+    defaultYear: 2024,
+    silhouetteVariant: 'sport_sedan',
+  );
+
   static const bmwM340i = VehicleCatalogEntry(
     assetKey: 'bmw_m340i',
     make: 'BMW',
@@ -65,6 +73,10 @@ abstract final class VehicleCatalog {
     toyotaCorolla,
   ];
 
+  static VehicleCatalogEntry resolveOrDefault(String make, String model) {
+    return resolve(make, model) ?? genericSedan;
+  }
+
   static VehicleCatalogEntry? resolve(String make, String model) {
     final normalizedMake = make.trim().toLowerCase();
     final normalizedModel = model.trim().toLowerCase();
@@ -84,6 +96,7 @@ abstract final class VehicleCatalog {
   }
 
   static VehicleCatalogEntry? byAssetKey(String key) {
+    if (key == genericSedan.assetKey) return genericSedan;
     for (final entry in entries) {
       if (entry.assetKey == key) return entry;
     }

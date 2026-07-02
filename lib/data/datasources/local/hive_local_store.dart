@@ -31,5 +31,9 @@ class HiveLocalStore {
 
   int get seedVersion => meta.get('seedVersion', defaultValue: 0) as int;
 
+  int get schemaVersion => meta.get('schemaVersion', defaultValue: 1) as int;
+
   Future<void> setSeedVersion(int version) => meta.put('seedVersion', version);
+
+  Future<void> setSchemaVersion(int version) => meta.put('schemaVersion', version);
 }

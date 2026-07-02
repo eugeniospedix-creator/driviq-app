@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../core/visuals/fault_severity_colors.dart';
 import '../../core/theme/dq_tokens.dart';
-import '../../data/catalog/vehicle_catalog.dart';
+import '../../domain/catalog/vehicle_catalog.dart';
 import '../../domain/entities/component_fault.dart';
 import '../../domain/entities/vehicle.dart';
-import '../../domain/enums/fault_severity.dart';
 import '../../domain/enums/vehicle_view_mode.dart';
 import 'interfaces/vehicle_renderer.dart';
 
@@ -42,7 +42,7 @@ class VectorVehicleRenderer implements VehicleRenderer {
             ),
             ...faults.map((fault) {
               final selected = highlightedFault?.id == fault.id;
-              final color = _severityColor(fault.severity);
+              final color = FaultSeverityColors.accent(fault.severity);
               return Positioned(
                 left: size.width * fault.anchor.x - (selected ? 19 : 15),
                 top: size.height * fault.anchor.y - (selected ? 19 : 15),
@@ -59,13 +59,6 @@ class VectorVehicleRenderer implements VehicleRenderer {
       },
     );
   }
-
-  Color _severityColor(FaultSeverity severity) => switch (severity) {
-        FaultSeverity.normal => DQ.emerald,
-        FaultSeverity.monitor => DQ.cyan,
-        FaultSeverity.attention => DQ.amber,
-        FaultSeverity.critical => DQ.coral,
-      };
 }
 
 class _Hotspot extends StatelessWidget {

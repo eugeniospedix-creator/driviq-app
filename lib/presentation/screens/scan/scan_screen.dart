@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 
+import '../../../application/providers/usecase_providers.dart';
+import '../../../application/usecases/save_vehicle_profile_usecase.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
-import '../../../data/catalog/vehicle_catalog.dart';
 import '../../../domain/entities/vehicle.dart';
-import '../../providers/repository_providers.dart';
+import '../../../domain/errors/app_exception.dart';
+import '../../providers/settings_providers.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
 import '../../widgets/buttons/dq_button.dart';
@@ -60,36 +61,52 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final make = _make.text.trim();
-    final model = _model.text.trim();
-    final year = int.tryParse(_year.text.trim()) ?? DateTime.now().year;
-    final catalog = VehicleCatalog.resolve(make, model);
-    final assetKey = catalog?.assetKey ?? 'generic_sedan';
+    try {
+      final vehicle = await ref.read(saveVehicleProfileUseCaseProvider).execute(
+            SaveVehicleProfileInput(
+              existingId: _previewVehicle?.id,
+              make: _make.text,
+              model: _model.text,
+              year: int.tryParse(_year.text.trim()) ?? DateTime.now().year,
+              isPrimary: _previewVehicle?.isPrimary ?? true,
+              createdAt: _previewVehicle?.createdAt,
+            ),
+          );
 
-    final vehicle = Vehicle(
-      id: _previewVehicle?.id ?? const Uuid().v4(),
-      make: make,
-      model: model,
-      year: year,
-      modelAssetKey: assetKey,
-      isPrimary: _previewVehicle?.isPrimary ?? true,
-      createdAt: _previewVehicle?.createdAt ?? DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+      ref.invalidate(vehiclesProvider);
+      ref.invalidate(primaryVehicleProvider);
+      ref.invalidate(garageOverviewProvider);
 
-    await ref.read(vehicleRepositoryProvider).save(vehicle);
-    ref.invalidate(vehiclesProvider);
-    ref.invalidate(primaryVehicleProvider);
+      setState(() {
+        _previewVehicle = vehicle;
+        _profileReady = true;
+      });
+    } on AppException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message), behavior: SnackBarBehavior.floating),
+      );
+    }
+  }
 
-    setState(() {
-      _previewVehicle = vehicle;
-      _profileReady = make.isNotEmpty && model.isNotEmpty;
-    });
+  void _startScan() {
+    final canScan = ref.read(canRunScanProvider);
+    if (!canScan) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enable microphone and AI in Settings to start a scan.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    context.push(AppRoutes.scanRunning);
   }
 
   @override
   Widget build(BuildContext context) {
     final vehicle = _previewVehicle;
+    final canScan = ref.watch(canRunScanProvider);
 
     return DqPage(
       child: ListView(
@@ -164,8 +181,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
           DqButton(
             label: 'START COMPONENT SCAN',
             icon: Icons.mic_rounded,
-            enabled: _profileReady,
-            onTap: _profileReady ? () => context.push(AppRoutes.scanRunning) : null,
+            enabled: _profileReady && canScan,
+            onTap: _profileReady && canScan ? _startScan : null,
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
+import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/buttons/dq_button.dart';
 import '../../widgets/health/health_ring.dart';
 import '../../widgets/shell/dq_page.dart';
@@ -22,10 +23,9 @@ class HomeScreen extends ConsumerWidget {
     final vehicleAsync = ref.watch(primaryVehicleProvider);
 
     return DqPage(
-      child: vehicleAsync.when(
-        loading: () => const DqLoadingShell(),
-        error: (e, _) => Center(child: Text('Unable to load vehicle', style: TextStyle(color: DQ.coral))),
-        data: (vehicle) {
+      child: DqAsyncBody(
+        asyncValue: vehicleAsync,
+        builder: (vehicle) {
           if (vehicle == null) {
             return Center(
               child: DqButton(
@@ -38,10 +38,9 @@ class HomeScreen extends ConsumerWidget {
           final healthAsync = ref.watch(vehicleHealthProvider(vehicle.id));
           final scanAsync = ref.watch(latestScanProvider(vehicle.id));
 
-          return healthAsync.when(
-            loading: () => const DqLoadingShell(),
-            error: (e, _) => const DqLoadingShell(),
-            data: (health) {
+          return DqAsyncBody(
+            asyncValue: healthAsync,
+            builder: (health) {
               final faults = scanAsync.value?.faults ?? const [];
               return ListView(
                 padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
@@ -120,6 +119,17 @@ class HomeScreen extends ConsumerWidget {
                                         health.summary,
                                         style: const TextStyle(color: DQ.textSecondary, height: 1.35, fontSize: 14),
                                       ),
+                                      if (health.trendDelta != null) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '${health.trendDelta! >= 0 ? '+' : ''}${health.trendDelta} since last scan',
+                                          style: TextStyle(
+                                            color: health.trendDelta! >= 0 ? DQ.emerald : DQ.amber,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
                                       if (health.lastScanAt != null) ...[
                                         const SizedBox(height: 8),
                                         Text(

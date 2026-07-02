@@ -12,29 +12,32 @@ import '../../../domain/enums/scan_source.dart';
 import '../../../domain/repositories/diagnosis_repository.dart';
 import '../../../domain/repositories/settings_repository.dart';
 import '../../../domain/repositories/vehicle_repository.dart';
-import '../../catalog/vehicle_catalog.dart';
-import '../../models/app_settings_model.dart';
+import '../../../domain/catalog/vehicle_catalog.dart';
+import '../../../domain/entities/app_settings.dart';
 import 'hive_local_store.dart';
 
 class LocalDataSeeder {
   LocalDataSeeder({
-    required HiveLocalStore store,
-    required VehicleRepository vehicles,
-    required DiagnosisRepository diagnosis,
-    required SettingsRepository settings,
-  })  : _store = store,
-        _vehicles = vehicles,
-        _diagnosis = diagnosis,
-        _settings = settings;
+    required this.store,
+    required this.vehicles,
+    required this.diagnosis,
+    required this.settings,
+  });
 
-  final HiveLocalStore _store;
-  final VehicleRepository _vehicles;
-  final DiagnosisRepository _diagnosis;
-  final SettingsRepository _settings;
+  final HiveLocalStore store;
+  final VehicleRepository vehicles;
+  final DiagnosisRepository diagnosis;
+  final SettingsRepository settings;
   static const _uuid = Uuid();
 
   Future<void> seedIfNeeded() async {
-    if (_store.seedVersion >= AppConstants.seedVersion) return;
+    if (store.seedVersion >= AppConstants.seedVersion) return;
+
+    // Never overwrite an existing user garage — demo content is first-install only.
+    if (store.vehicles.isNotEmpty) {
+      await store.setSeedVersion(AppConstants.seedVersion);
+      return;
+    }
 
     final now = DateTime.now();
     final bmwId = _uuid.v4();
@@ -64,13 +67,13 @@ class LocalDataSeeder {
       updatedAt: now,
     );
 
-    await _vehicles.save(bmw);
-    await _vehicles.save(audi);
+    await vehicles.save(bmw);
+    await vehicles.save(audi);
 
-    await _diagnosis.save(_bmwScan(bmwId, now));
-    await _diagnosis.save(_audiScan(audiId, now.subtract(const Duration(days: 2))));
+    await diagnosis.save(_bmwScan(bmwId, now));
+    await diagnosis.save(_audiScan(audiId, now.subtract(const Duration(days: 2))));
 
-    await _settings.save(const AppSettingsModel(
+    await settings.save(const AppSettings(
       microphoneEnabled: true,
       motionSensorsEnabled: true,
       privacyMode: true,
@@ -79,9 +82,10 @@ class LocalDataSeeder {
       offlineAiEnabled: true,
       obdEnabled: false,
       arPreviewEnabled: false,
-    ).toEntity());
+    ));
 
-    await _store.setSeedVersion(AppConstants.seedVersion);
+    await store.setSeedVersion(AppConstants.seedVersion);
+    await store.setSchemaVersion(1);
   }
 
   ScanSession _bmwScan(String vehicleId, DateTime now) {

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/app_settings.dart';
+import '../../domain/enums/settings_key.dart';
+import '../../domain/extensions/app_settings_scan.dart';
 import 'repository_providers.dart';
 
 final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(SettingsNotifier.new);
@@ -10,24 +12,24 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   Future<AppSettings> build() => ref.watch(settingsRepositoryProvider).get();
 
   Future<void> apply(AppSettings settings) async {
+    final previous = state.value ?? const AppSettings();
     state = const AsyncLoading();
-    await ref.read(settingsRepositoryProvider).save(settings);
-    state = AsyncData(settings);
+    state = await AsyncValue.guard(() async {
+      await ref.read(settingsRepositoryProvider).save(settings);
+      return settings;
+    });
+    if (state.hasError) {
+      state = AsyncData(previous);
+    }
   }
 
-  Future<void> toggle(String key) async {
+  Future<void> toggle(SettingsKey key) async {
     final current = state.value ?? const AppSettings();
-    final updated = switch (key) {
-      'microphone' => current.copyWith(microphoneEnabled: !current.microphoneEnabled),
-      'motion' => current.copyWith(motionSensorsEnabled: !current.motionSensorsEnabled),
-      'privacy' => current.copyWith(privacyMode: !current.privacyMode),
-      'safeDriving' => current.copyWith(safeDrivingMode: !current.safeDrivingMode),
-      'cloudAi' => current.copyWith(cloudAiEnabled: !current.cloudAiEnabled),
-      'offlineAi' => current.copyWith(offlineAiEnabled: !current.offlineAiEnabled),
-      'obd' => current.copyWith(obdEnabled: !current.obdEnabled),
-      'ar' => current.copyWith(arPreviewEnabled: !current.arPreviewEnabled),
-      _ => current,
-    };
-    await apply(updated);
+    await apply(current.toggle(key));
   }
 }
+
+final canRunScanProvider = Provider<bool>((ref) {
+  final settings = ref.watch(settingsProvider).value;
+  return settings?.canRunScan() ?? false;
+});

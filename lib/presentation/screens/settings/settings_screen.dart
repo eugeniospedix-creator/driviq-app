@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../domain/enums/settings_key.dart';
 import '../../providers/settings_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
+import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/cards/settings_tile.dart';
 import '../../widgets/shell/dq_page.dart';
 import '../../widgets/typography/section_header.dart';
@@ -15,10 +17,9 @@ class SettingsScreen extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsProvider);
 
     return DqPage(
-      child: settingsAsync.when(
-        loading: () => const Center(child: DqLoadingShell()),
-        error: (e, _) => const Center(child: DqLoadingShell()),
-        data: (settings) => ListView(
+      child: DqAsyncBody(
+        asyncValue: settingsAsync,
+        builder: (settings) => ListView(
           padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
           children: [
             const FadeSlideIn(
@@ -35,7 +36,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Microphone',
                 subtitle: 'Local audio analysis. Temporary files deleted after scan.',
                 value: settings.microphoneEnabled,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('microphone'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.microphone),
               ),
             ),
             FadeSlideIn(
@@ -45,7 +46,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Motion Sensors',
                 subtitle: 'Accelerometer and gyroscope vibration profile.',
                 value: settings.motionSensorsEnabled,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('motion'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.motion),
               ),
             ),
             FadeSlideIn(
@@ -55,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Privacy Mode',
                 subtitle: 'Do not store raw cabin audio.',
                 value: settings.privacyMode,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('privacy'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.privacy),
               ),
             ),
             FadeSlideIn(
@@ -65,7 +66,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Safe Driving Mode',
                 subtitle: 'Reduce interaction while the vehicle is moving.',
                 value: settings.safeDrivingMode,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('safeDriving'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.safeDriving),
               ),
             ),
             FadeSlideIn(
@@ -75,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Offline AI',
                 subtitle: 'On-device diagnosis without cloud dependency.',
                 value: settings.offlineAiEnabled,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('offlineAi'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.offlineAi),
               ),
             ),
             FadeSlideIn(
@@ -85,7 +86,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: 'Cloud AI',
                 subtitle: 'Enhanced explanations via secure cloud inference.',
                 value: settings.cloudAiEnabled,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('cloudAi'),
+                onChanged: (_) => ref.read(settingsProvider.notifier).toggle(SettingsKey.cloudAi),
               ),
             ),
             FadeSlideIn(
@@ -96,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: 'Vehicle telemetry via diagnostic port.',
                 value: settings.obdEnabled,
                 enabled: false,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('obd'),
+                onChanged: (_) {},
               ),
             ),
             FadeSlideIn(
@@ -107,7 +108,7 @@ class SettingsScreen extends ConsumerWidget {
                 subtitle: 'Augmented reality component inspection.',
                 value: settings.arPreviewEnabled,
                 enabled: false,
-                onChanged: (_) => ref.read(settingsProvider.notifier).toggle('ar'),
+                onChanged: (_) {},
               ),
             ),
             FadeSlideIn(

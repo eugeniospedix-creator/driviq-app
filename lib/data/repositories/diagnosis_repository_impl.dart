@@ -10,33 +10,55 @@ class DiagnosisRepositoryImpl implements DiagnosisRepository {
 
   final HiveLocalStore _store;
 
+  static String _latestScanKey(String vehicleId) => 'latest_scan_$vehicleId';
+
+  ScanSession? _parseSession(dynamic raw) {
+    if (raw is! Map) return null;
+    try {
+      return ScanSessionModel.fromJson(Map<dynamic, dynamic>.from(raw)).toEntity();
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<ScanSession?> getById(String id) async {
-    final raw = _store.scans.get(id);
-    if (raw == null) return null;
-    return ScanSessionModel.fromJson(Map<dynamic, dynamic>.from(raw as Map)).toEntity();
+    return _parseSession(_store.scans.get(id));
   }
 
   @override
   Future<List<ScanSession>> getHistoryForVehicle(String vehicleId) async {
-    return _store.scans.values
-        .map((s) => ScanSessionModel.fromJson(Map<dynamic, dynamic>.from(s as Map)).toEntity())
-        .where((s) => s.vehicleId == vehicleId)
-        .toList()
-      ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    final sessions = <ScanSession>[];
+    for (final raw in _store.scans.values) {
+      final session = _parseSession(raw);
+      if (session != null && session.vehicleId == vehicleId) {
+        sessions.add(session);
+      }
+    }
+    sessions.sort((a, b) => b.startedAt.compareTo(a.startedAt));
+    return sessions;
   }
 
   @override
   Future<ScanSession?> getLatestForVehicle(String vehicleId) async {
+    final indexedId = _store.meta.get(_latestScanKey(vehicleId));
+    if (indexedId is String) {
+      final indexed = await getById(indexedId);
+      if (indexed != null) return indexed;
+    }
+
     final history = await getHistoryForVehicle(vehicleId);
     if (history.isEmpty) return null;
-    return history.first;
+
+    final latest = history.first;
+    await _store.meta.put(_latestScanKey(vehicleId), latest.id);
+    return latest;
   }
 
   @override
   Future<VehicleHealth> getHealthForVehicle(String vehicleId) async {
-    final latest = await getLatestForVehicle(vehicleId);
-    if (latest == null) {
+    final history = await getHistoryForVehicle(vehicleId);
+    if (history.isEmpty) {
       return const VehicleHealth(
         score: 0,
         status: HealthStatus.good,
@@ -45,11 +67,8 @@ class DiagnosisRepositoryImpl implements DiagnosisRepository {
       );
     }
 
-    final history = await getHistoryForVehicle(vehicleId);
-    int? trend;
-    if (history.length >= 2) {
-      trend = latest.healthScore - history[1].healthScore;
-    }
+    final latest = history.first;
+    final trend = history.length >= 2 ? latest.healthScore - history[1].healthScore : null;
 
     return VehicleHealth(
       score: latest.healthScore,
@@ -63,5 +82,6 @@ class DiagnosisRepositoryImpl implements DiagnosisRepository {
   @override
   Future<void> save(ScanSession session) async {
     await _store.scans.put(session.id, ScanSessionModel.fromEntity(session).toJson());
+    await _store.meta.put(_latestScanKey(session.vehicleId), session.id);
   }
 }

@@ -8,6 +8,15 @@ class VehicleRepositoryImpl implements VehicleRepository {
 
   final HiveLocalStore _store;
 
+  Vehicle? _parseVehicle(dynamic raw) {
+    if (raw is! Map) return null;
+    try {
+      return VehicleModel.fromJson(Map<dynamic, dynamic>.from(raw)).toEntity();
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<void> delete(String id) async {
     await _store.vehicles.delete(id);
@@ -15,17 +24,18 @@ class VehicleRepositoryImpl implements VehicleRepository {
 
   @override
   Future<List<Vehicle>> getAll() async {
-    return _store.vehicles.values
-        .map((v) => VehicleModel.fromJson(Map<dynamic, dynamic>.from(v as Map)).toEntity())
-        .toList()
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final vehicles = <Vehicle>[];
+    for (final raw in _store.vehicles.values) {
+      final vehicle = _parseVehicle(raw);
+      if (vehicle != null) vehicles.add(vehicle);
+    }
+    vehicles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return vehicles;
   }
 
   @override
   Future<Vehicle?> getById(String id) async {
-    final raw = _store.vehicles.get(id);
-    if (raw == null) return null;
-    return VehicleModel.fromJson(Map<dynamic, dynamic>.from(raw as Map)).toEntity();
+    return _parseVehicle(_store.vehicles.get(id));
   }
 
   @override
@@ -43,12 +53,11 @@ class VehicleRepositoryImpl implements VehicleRepository {
   @override
   Future<void> setPrimary(String id) async {
     final all = await getAll();
+    final now = DateTime.now();
     for (final vehicle in all) {
-      final updated = vehicle.copyWith(
-        isPrimary: vehicle.id == id,
-        updatedAt: DateTime.now(),
-      );
-      await save(updated);
+      final shouldBePrimary = vehicle.id == id;
+      if (vehicle.isPrimary == shouldBePrimary) continue;
+      await save(vehicle.copyWith(isPrimary: shouldBePrimary, updatedAt: now));
     }
   }
 }

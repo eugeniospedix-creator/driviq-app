@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../application/providers/usecase_providers.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
-import '../../providers/repository_providers.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
+import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/cards/vehicle_garage_card.dart';
 import '../../widgets/shell/dq_page.dart';
 import '../../widgets/typography/section_header.dart';
@@ -14,13 +17,12 @@ class GarageScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final vehiclesAsync = ref.watch(vehiclesProvider);
+    final garageAsync = ref.watch(garageOverviewProvider);
 
     return DqPage(
-      child: vehiclesAsync.when(
-        loading: () => const Center(child: DqLoadingShell()),
-        error: (e, _) => Center(child: Text('Unable to load garage', style: TextStyle(color: DQ.coral))),
-        data: (vehicles) {
+      child: DqAsyncBody(
+        asyncValue: garageAsync,
+        builder: (overviews) {
           return ListView(
             padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
             children: [
@@ -31,23 +33,30 @@ class GarageScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 22),
-              ...vehicles.asMap().entries.map((entry) {
+              ...overviews.asMap().entries.map((entry) {
                 final i = entry.key;
-                final vehicle = entry.value;
+                final overview = entry.value;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: FadeSlideIn(
                     delay: Duration(milliseconds: 60 * i),
-                    child: _GarageVehicleTile(vehicleId: vehicle.id),
+                    child: VehicleGarageCard(
+                      vehicle: overview.vehicle,
+                      health: overview.health,
+                      onTap: () async {
+                        await ref.read(setPrimaryVehicleUseCaseProvider).execute(overview.vehicle.id);
+                        ref.invalidate(primaryVehicleProvider);
+                        ref.invalidate(vehiclesProvider);
+                        ref.invalidate(garageOverviewProvider);
+                      },
+                    ),
                   ),
                 );
               }),
               FadeSlideIn(
-                delay: Duration(milliseconds: 60 * vehicles.length),
+                delay: Duration(milliseconds: 60 * overviews.length),
                 child: GestureDetector(
-                  onTap: () {
-                    // Phase 2: add-vehicle flow
-                  },
+                  onTap: () => context.go(AppRoutes.scan),
                   child: GlassPanel(
                     child: Row(
                       children: [
@@ -75,7 +84,7 @@ class GarageScreen extends ConsumerWidget {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Manual entry or VIN lookup',
+                                'Configure via Vehicle Passport in Scan',
                                 style: TextStyle(color: DQ.textMuted, fontSize: 13),
                               ),
                             ],
@@ -89,35 +98,6 @@ class GarageScreen extends ConsumerWidget {
               ),
             ],
           );
-        },
-      ),
-    );
-  }
-}
-
-class _GarageVehicleTile extends ConsumerWidget {
-  const _GarageVehicleTile({required this.vehicleId});
-
-  final String vehicleId;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final vehiclesAsync = ref.watch(vehiclesProvider);
-    final healthAsync = ref.watch(vehicleHealthProvider(vehicleId));
-
-    final vehicle = vehiclesAsync.value?.where((v) => v.id == vehicleId).firstOrNull;
-    if (vehicle == null) return const SizedBox.shrink();
-
-    return healthAsync.when(
-      loading: () => const SizedBox(height: 200),
-      error: (_, __) => const SizedBox.shrink(),
-      data: (health) => VehicleGarageCard(
-        vehicle: vehicle,
-        health: health,
-        onTap: () async {
-          await ref.read(vehicleRepositoryProvider).setPrimary(vehicle.id);
-          ref.invalidate(primaryVehicleProvider);
-          ref.invalidate(vehiclesProvider);
         },
       ),
     );

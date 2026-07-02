@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/animations/fade_slide_in.dart';
+import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/cards/diagnosis_detail.dart';
 import '../../widgets/shell/dq_page.dart';
 import '../../widgets/typography/section_header.dart';
@@ -18,10 +19,9 @@ class ReportScreen extends ConsumerWidget {
     final selectedId = ref.watch(selectedFaultIdProvider);
 
     return DqPage(
-      child: vehicleAsync.when(
-        loading: () => const Center(child: DqLoadingShell()),
-        error: (e, _) => Center(child: Text('Unable to load report', style: TextStyle(color: DQ.coral))),
-        data: (vehicle) {
+      child: DqAsyncBody(
+        asyncValue: vehicleAsync,
+        builder: (vehicle) {
           if (vehicle == null) {
             return const Center(
               child: Text('No vehicle selected', style: TextStyle(color: DQ.textMuted)),
@@ -29,10 +29,9 @@ class ReportScreen extends ConsumerWidget {
           }
 
           final scanAsync = ref.watch(latestScanProvider(vehicle.id));
-          return scanAsync.when(
-            loading: () => const Center(child: DqLoadingShell()),
-            error: (e, _) => const Center(child: DqLoadingShell()),
-            data: (scan) {
+          return DqAsyncBody(
+            asyncValue: scanAsync,
+            builder: (scan) {
               if (scan == null) {
                 return const Center(
                   child: Text('Run a scan to generate your report', style: TextStyle(color: DQ.textMuted)),
@@ -45,6 +44,7 @@ class ReportScreen extends ConsumerWidget {
                   child: Text('No component data in this scan', style: TextStyle(color: DQ.textMuted)),
                 );
               }
+
               var selected = faults.first;
               if (selectedId != null) {
                 selected = faults.firstWhere((f) => f.id == selectedId, orElse: () => faults.first);
