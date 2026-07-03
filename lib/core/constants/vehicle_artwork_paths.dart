@@ -12,7 +12,7 @@ abstract final class VehicleArtworkPaths {
   static const compactSedan = '$_root/compact_sedan/exterior.png';
   static const executiveSedan = '$_root/executive_sedan/exterior.png';
 
-  static const allHeroes = [sportSedan, evSedan, compactSedan, executiveSedan];
+  static const allHeroes = [sportSedan, evSedan, compactSedan, executiveSedan, fallback];
 
   /// Resolves the hero PNG for a vehicle — sync, no I/O.
   static String heroFor(Vehicle vehicle) {

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "packId": "audi/b9-a4",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "Audi",
+    "model": "A4",
+    "generation": "B9",
+    "yearRange": { "from": 2016, "to": null },
+    "bodyType": "executive_sedan",
+    "fuelTypes": ["petrol", "diesel", "hybrid"]
+  },
+  "display": { "label": "Audi A4", "subtitle": "B9" },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": null,
+    "sourceType": "pending_studio_pass",
+    "sourceLabel": "Awaiting Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/executive_sedan"
+  },
+  "media": [],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "pending",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": null,
+    "licenseRef": "license.json"
+  },
+  "lifecycle": { "status": "active", "supersedes": null, "deprecatedBy": null }
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "packId": "_fallback/sport_sedan",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "Generic",
+    "model": "Sport Sedan",
+    "generation": null,
+    "yearRange": { "from": 2015, "to": null },
+    "bodyType": "sport_sedan",
+    "fuelTypes": ["petrol", "diesel", "hybrid"]
+  },
+  "display": {
+    "label": "Sport Sedan",
+    "subtitle": "Driviq Studio"
+  },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": "2026-07-03",
+    "sourceType": "in_house",
+    "sourceLabel": "Driviq Studio Pipeline"
+  },
+  "media": [
+    {
+      "id": "studio_master",
+      "role": "studio_master",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    },
+    {
+      "id": "hero_home",
+      "role": "hero_home",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    },
+    {
+      "id": "hero_garage",
+      "role": "hero_garage",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    },
+    {
+      "id": "hero_scan",
+      "role": "hero_scan",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    },
+    {
+      "id": "hero_report",
+      "role": "hero_report",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    },
+    {
+      "id": "thumbnail",
+      "role": "thumbnail",
+      "format": "png",
+      "path": "media/studio_master.png",
+      "priority": 100
+    }
+  ],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "driviq_studio",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": "2026-07-03",
+    "licenseRef": "license.json"
+  },
+  "lifecycle": {
+    "status": "active",
+    "supersedes": null,
+    "deprecatedBy": null
+  }
+}

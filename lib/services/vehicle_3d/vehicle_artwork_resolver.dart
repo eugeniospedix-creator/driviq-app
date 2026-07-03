@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 
+import '../../core/constants/vehicle_artwork_paths.dart';
 import '../../domain/entities/vehicle.dart';
 import '../../domain/entities/vehicle_3d_metadata.dart';
 import '../../domain/entities/vehicle_artwork_spec.dart';
@@ -7,11 +8,6 @@ import '../../domain/enums/vehicle_view_mode.dart';
 
 /// Resolves pre-rendered artwork paths from body type, make, and bundled assets.
 class VehicleArtworkResolver {
-  static const _artworkRoot = 'assets/vehicles/artwork';
-
-  static const _fallbackBody = 'sport_sedan';
-
-  /// Maps catalog body types to artwork folders.
   static const _knownBodies = {
     'sport_sedan',
     'ev_sedan',
@@ -24,14 +20,11 @@ class VehicleArtworkResolver {
     required Vehicle3DMetadata metadata,
   }) async {
     final bodyType = _effectiveBodyType(vehicle, metadata);
-    final hero = await _firstAvailable([
-      '$_artworkRoot/$bodyType/exterior.png',
-      '$_artworkRoot/$_fallbackBody/exterior.png',
-    ]);
+    final hero = VehicleArtworkPaths.heroFor(vehicle);
 
-    final engine = await _optional('$_artworkRoot/$bodyType/engine.png');
-    final interior = await _optional('$_artworkRoot/$bodyType/interior.png');
-    final suspension = await _optional('$_artworkRoot/$bodyType/suspension.png');
+    final engine = await _optional(hero);
+    final interior = await _optional(hero);
+    final suspension = await _optional(hero);
 
     return VehicleArtworkSpec(
       bodyType: bodyType,
@@ -46,9 +39,7 @@ class VehicleArtworkResolver {
     required Vehicle vehicle,
     required Vehicle3DMetadata metadata,
   }) async {
-    final bodyType = _effectiveBodyType(vehicle, metadata);
-    return await _assetExists('$_artworkRoot/$bodyType/exterior.png') ||
-        await _assetExists('$_artworkRoot/$_fallbackBody/exterior.png');
+    return _assetExists(VehicleArtworkPaths.heroFor(vehicle));
   }
 
   String _effectiveBodyType(Vehicle vehicle, Vehicle3DMetadata metadata) {
@@ -59,14 +50,7 @@ class VehicleArtworkResolver {
 
     final body = metadata.bodyType;
     if (_knownBodies.contains(body)) return body;
-    return _fallbackBody;
-  }
-
-  Future<String> _firstAvailable(List<String> candidates) async {
-    for (final path in candidates) {
-      if (await _assetExists(path)) return path;
-    }
-    return candidates.last;
+    return 'sport_sedan';
   }
 
   Future<String?> _optional(String path) async {

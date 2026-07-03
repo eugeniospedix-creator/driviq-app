@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "packId": "bmw/g20-m340i",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "BMW",
+    "model": "M340i",
+    "generation": "G20",
+    "yearRange": { "from": 2019, "to": 2025 },
+    "bodyType": "sport_sedan",
+    "fuelTypes": ["petrol", "diesel", "hybrid"]
+  },
+  "display": {
+    "label": "BMW M340i",
+    "subtitle": "G20"
+  },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": null,
+    "sourceType": "pending_studio_pass",
+    "sourceLabel": "Awaiting Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/sport_sedan"
+  },
+  "media": [],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "pending",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": null,
+    "licenseRef": "license.json"
+  },
+  "lifecycle": {
+    "status": "active",
+    "supersedes": null,
+    "deprecatedBy": null
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "packId": "bmw/g80-m3",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "BMW",
+    "model": "M3",
+    "generation": "G80",
+    "yearRange": { "from": 2021, "to": null },
+    "bodyType": "sport_sedan",
+    "fuelTypes": ["petrol"]
+  },
+  "display": { "label": "BMW M3", "subtitle": "G80" },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": null,
+    "sourceType": "pending_studio_pass",
+    "sourceLabel": "Awaiting Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/sport_sedan"
+  },
+  "media": [],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "pending",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": null,
+    "licenseRef": "license.json"
+  },
+  "lifecycle": { "status": "active", "supersedes": null, "deprecatedBy": null }
+}

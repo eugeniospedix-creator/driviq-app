@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "chains": {
+    "sport_sedan": ["_fallback/sport_sedan", "_fallback/universal"],
+    "ev_sedan": ["_fallback/ev_sedan", "_fallback/sport_sedan", "_fallback/universal"],
+    "compact_sedan": ["_fallback/compact_sedan", "_fallback/universal"],
+    "executive_sedan": ["_fallback/executive_sedan", "_fallback/sport_sedan", "_fallback/universal"],
+    "suv_mid": ["_fallback/suv_mid", "_fallback/universal"],
+    "pickup": ["_fallback/pickup", "_fallback/universal"]
+  },
+  "universal": "_fallback/universal"
+}

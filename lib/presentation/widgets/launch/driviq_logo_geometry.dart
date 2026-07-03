@@ -28,6 +28,21 @@ abstract final class DriviqLogoGeometry {
       ..cubicTo(0.86, 0.34, 0.90, 0.46, 0.84, 0.52);
   }
 
+  /// Closed side-profile silhouette for splash fill — logo strokes united.
+  static Path closedSilhouette() {
+    final roof = topStroke();
+    return Path()
+      ..moveTo(0.86, 0.60)
+      ..lineTo(0.90, 0.50)
+      ..lineTo(0.84, 0.52)
+      ..addPath(roof, Offset.zero)
+      ..lineTo(0.10, 0.60)
+      ..lineTo(0.86, 0.60)
+      ..close();
+  }
+
+  static Path scaledSilhouette(Size size, Rect bounds) => _transform(closedSilhouette(), bounds);
+
   static Path scaledBottom(Size size, Rect bounds) => _transform(bottomStroke(), bounds);
 
   static Path scaledTop(Size size, Rect bounds) => _transform(topStroke(), bounds);

@@ -13,7 +13,7 @@ import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/buttons/dq_button.dart';
 import '../../widgets/cards/diagnosis_detail.dart';
 import '../../widgets/shell/dq_page.dart';
-import '../../widgets/vehicle/interactive_vehicle_viewer.dart';
+import '../../widgets/vehicle/driviq_studio_vehicle.dart';
 
 class DiagnosisResultScreen extends ConsumerStatefulWidget {
   const DiagnosisResultScreen({super.key});
@@ -114,14 +114,10 @@ class _ResultBody extends StatelessWidget {
           height: 280,
           child: DarkPanel(
             padding: const EdgeInsets.all(12),
-            child: InteractiveVehicleViewer(
+            child: DriviqStudioVehicle(
               vehicle: vehicle,
               height: 256,
-              interactive: true,
-              showViewModes: true,
-              faults: faults,
-              highlightedFault: active,
-              onFaultSelected: onSelect,
+              highlightColor: DQ.healthColor(scan.healthScore),
             ),
           ),
         ),

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "packId": "toyota/e210-corolla",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "Toyota",
+    "model": "Corolla",
+    "generation": "E210",
+    "yearRange": { "from": 2019, "to": null },
+    "bodyType": "compact_sedan",
+    "fuelTypes": ["petrol", "hybrid"]
+  },
+  "display": { "label": "Toyota Corolla", "subtitle": "E210" },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": null,
+    "sourceType": "pending_studio_pass",
+    "sourceLabel": "Awaiting Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/compact_sedan"
+  },
+  "media": [],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "pending",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": null,
+    "licenseRef": "license.json"
+  },
+  "lifecycle": { "status": "active", "supersedes": null, "deprecatedBy": null }
+}

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "packId": "make/model-generation",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "Make",
+    "model": "Model",
+    "generation": "GEN",
+    "yearRange": { "from": 2020, "to": null },
+    "bodyType": "sport_sedan",
+    "fuelTypes": ["petrol"]
+  },
+  "display": {
+    "label": "Make Model",
+    "subtitle": "GEN"
+  },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": "YYYY-MM-DD",
+    "sourceType": "driviq_studio",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/sport_sedan"
+  },
+  "media": [
+    { "id": "hero_home", "role": "hero_home", "format": "webp", "path": "media/hero_home.webp", "priority": 100 },
+    { "id": "hero_garage", "role": "hero_garage", "format": "webp", "path": "media/hero_garage.webp", "priority": 100 },
+    { "id": "hero_scan", "role": "hero_scan", "format": "webp", "path": "media/hero_scan.webp", "priority": 100 },
+    { "id": "hero_report", "role": "hero_report", "format": "webp", "path": "media/hero_report.webp", "priority": 100 },
+    { "id": "thumbnail", "role": "thumbnail", "format": "webp", "path": "media/thumbnail.webp", "priority": 100 }
+  ],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "driviq_studio",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": "YYYY-MM-DD",
+    "licenseRef": "license.json"
+  },
+  "lifecycle": { "status": "active", "supersedes": null, "deprecatedBy": null }
+}

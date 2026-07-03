@@ -11,108 +11,92 @@ class LaunchSplashPainter extends CustomPainter {
     required this.pulse,
     required this.settle,
     required this.leaderOpacity,
-    required this.backgroundPulse,
   });
 
-  /// 0–1 combined bottom + top stroke draw.
   final double drawProgress;
-
-  /// Heartbeat pulse glow 0–1.
   final double pulse;
-
-  /// Logo settle / lock-in 0–1.
   final double settle;
-
-  /// Leading car-light intensity.
   final double leaderOpacity;
-
-  /// Ambient background breathe.
-  final double backgroundPulse;
 
   static const _cyan = DQ.cyan;
 
   @override
   void paint(Canvas canvas, Size size) {
-    _paintBackground(canvas, size);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = DQ.voidBlack,
+    );
 
     final bounds = DriviqLogoGeometry.logoBounds(size);
     final bottom = DriviqLogoGeometry.scaledBottom(size, bounds);
     final top = DriviqLogoGeometry.scaledTop(size, bounds);
+    final silhouette = DriviqLogoGeometry.scaledSilhouette(size, bounds);
+
+    final ambient = Paint()
+      ..shader = ui.Gradient.radial(
+        bounds.center,
+        bounds.width * 0.75,
+        [
+          _cyan.withValues(alpha: 0.035 + settle * 0.04),
+          Colors.transparent,
+        ],
+      );
+    canvas.drawCircle(bounds.center, bounds.width * 0.7, ambient);
 
     final bottomT = DriviqLogoGeometry.splitProgress(drawProgress);
     final topT = DriviqLogoGeometry.topProgress(drawProgress);
 
-    if (bottomT > 0) {
-      _paintStroke(
-        canvas,
-        DriviqLogoGeometry.extractPartial(bottom, bottomT),
-        width: 3.8,
-        glow: 18,
-        alpha: 0.85 + settle * 0.15,
+    if (settle > 0.05) {
+      canvas.drawPath(
+        silhouette,
+        Paint()
+          ..shader = ui.Gradient.radial(
+            bounds.center,
+            bounds.width * 0.6,
+            [
+              const Color(0xFF1A2838).withValues(alpha: settle * 0.55),
+              DQ.voidBlack.withValues(alpha: settle * 0.35),
+            ],
+          ),
       );
     }
 
+    if (bottomT > 0) {
+      _paintStroke(canvas, DriviqLogoGeometry.extractPartial(bottom, bottomT), width: 3.6, glow: 20);
+    }
+
     if (topT > 0) {
-      _paintStroke(
-        canvas,
-        DriviqLogoGeometry.extractPartial(top, topT),
-        width: 3.4,
-        glow: 16,
-        alpha: 0.85 + settle * 0.15,
-      );
+      _paintStroke(canvas, DriviqLogoGeometry.extractPartial(top, topT), width: 3.2, glow: 18);
     }
 
     if (pulse > 0) {
       _paintHeartbeatPulse(canvas, size, pulse);
     }
 
-    if (drawProgress > 0 && drawProgress < 1.0) {
-      _paintLeader(canvas, size);
+    if (leaderOpacity > 0.02 && drawProgress < 0.98) {
+      _paintLeader(canvas, size, bottom, top);
     }
 
-    if (settle > 0) {
-      _paintSettledGlow(canvas, bounds, settle);
+    if (settle > 0.35) {
+      canvas.drawPath(
+        silhouette,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..color = _cyan.withValues(alpha: settle * 0.12),
+      );
     }
   }
 
-  void _paintBackground(Canvas canvas, Size size) {
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = DQ.voidBlack,
-    );
-
-    final cx = size.width * 0.5;
-    final cy = size.height * 0.44;
-    canvas.drawCircle(
-      Offset(cx, cy),
-      size.width * 0.55,
-      Paint()
-        ..shader = ui.Gradient.radial(
-          Offset(cx, cy - 20),
-          size.width * 0.5,
-          [
-            _cyan.withValues(alpha: 0.04 + backgroundPulse * 0.03),
-            Colors.transparent,
-          ],
-        ),
-    );
-  }
-
-  void _paintStroke(
-    Canvas canvas,
-    Path path, {
-    required double width,
-    required double glow,
-    required double alpha,
-  }) {
+  void _paintStroke(Canvas canvas, Path path, {required double width, required double glow}) {
     if (path.getBounds().isEmpty) return;
 
     canvas.drawPath(
       path,
       Paint()
-        ..color = _cyan.withValues(alpha: alpha * 0.35)
+        ..color = _cyan.withValues(alpha: 0.30)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = width + 6
+        ..strokeWidth = width + 8
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, glow),
@@ -124,10 +108,7 @@ class LaunchSplashPainter extends CustomPainter {
         ..shader = ui.Gradient.linear(
           path.getBounds().topLeft,
           path.getBounds().bottomRight,
-          [
-            _cyan.withValues(alpha: alpha),
-            _cyan.withValues(alpha: alpha * 0.75),
-          ],
+          [_cyan, _cyan.withValues(alpha: 0.82)],
         )
         ..style = PaintingStyle.stroke
         ..strokeWidth = width
@@ -136,16 +117,17 @@ class LaunchSplashPainter extends CustomPainter {
     );
   }
 
-  void _paintLeader(Canvas canvas, Size size) {
+  void _paintLeader(Canvas canvas, Size size, Path bottom, Path top) {
     final pos = DriviqLogoGeometry.leaderPosition(drawProgress, size);
-    final r = 4.5 + leaderOpacity * 2;
+    final tangent = _tangentAt(drawProgress, size, bottom, top);
+    final r = 3.5 + leaderOpacity * 1.5;
 
     canvas.drawCircle(
       pos,
-      r + 14,
+      r + 12,
       Paint()
-        ..color = _cyan.withValues(alpha: 0.18 * leaderOpacity)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+        ..color = _cyan.withValues(alpha: 0.22 * leaderOpacity)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
     );
 
     canvas.drawCircle(
@@ -156,46 +138,57 @@ class LaunchSplashPainter extends CustomPainter {
           pos,
           r,
           [
-            Colors.white.withValues(alpha: 0.95 * leaderOpacity),
-            _cyan.withValues(alpha: 0.85 * leaderOpacity),
+            Colors.white.withValues(alpha: leaderOpacity),
+            _cyan.withValues(alpha: 0.9 * leaderOpacity),
           ],
         ),
     );
+
+    if (tangent != null) {
+      final tail = pos - tangent * 18;
+      canvas.drawLine(
+        tail,
+        pos,
+        Paint()
+          ..strokeWidth = 2
+          ..strokeCap = StrokeCap.round
+          ..shader = ui.Gradient.linear(
+            tail,
+            pos,
+            [Colors.transparent, _cyan.withValues(alpha: 0.5 * leaderOpacity)],
+          ),
+      );
+    }
+  }
+
+  Offset? _tangentAt(double t, Size size, Path bottom, Path top) {
+    final onBottom = t <= DriviqLogoGeometry.drawBottomWeight;
+    final path = onBottom ? bottom : top;
+    final progress = onBottom ? DriviqLogoGeometry.splitProgress(t) : DriviqLogoGeometry.topProgress(t);
+    for (final metric in path.computeMetrics()) {
+      final offset = metric.length * progress.clamp(0, 1);
+      final tan = metric.getTangentForOffset(offset);
+      return tan?.vector;
+    }
+    return null;
   }
 
   void _paintHeartbeatPulse(Canvas canvas, Size size, double pulse) {
     final center = DriviqLogoGeometry.heartbeatCenter(size);
-    final expand = 1 + pulse * 0.8;
-    final alpha = (1 - pulse) * 0.45;
+    final alpha = (1 - pulse) * 0.5;
 
     canvas.drawCircle(
       center,
-      28 * expand,
+      32 + pulse * 12,
       Paint()
-        ..color = _cyan.withValues(alpha: alpha)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22),
+        ..color = _cyan.withValues(alpha: alpha * 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
     );
 
     canvas.drawCircle(
       center,
-      8 + pulse * 6,
-      Paint()..color = _cyan.withValues(alpha: (1 - pulse) * 0.6),
-    );
-  }
-
-  void _paintSettledGlow(Canvas canvas, Rect bounds, double settle) {
-    final alpha = settle * 0.12;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(bounds.inflate(24), const Radius.circular(32)),
-      Paint()
-        ..shader = ui.Gradient.radial(
-          bounds.center,
-          bounds.width * 0.55,
-          [
-            _cyan.withValues(alpha: alpha),
-            Colors.transparent,
-          ],
-        ),
+      6,
+      Paint()..color = _cyan.withValues(alpha: alpha * 0.8),
     );
   }
 
@@ -204,6 +197,5 @@ class LaunchSplashPainter extends CustomPainter {
       old.drawProgress != drawProgress ||
       old.pulse != pulse ||
       old.settle != settle ||
-      old.leaderOpacity != leaderOpacity ||
-      old.backgroundPulse != backgroundPulse;
+      old.leaderOpacity != leaderOpacity;
 }

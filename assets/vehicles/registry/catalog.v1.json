@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026.07.03",
+  "studioProfileId": "driviq_dark_studio_v1",
+  "entries": [
+    {
+      "id": "bmw.g20_m340i",
+      "make": "BMW",
+      "model": "M340i",
+      "modelAliases": ["M340i xDrive", "M340i"],
+      "generation": "G20",
+      "yearRange": { "from": 2019, "to": 2025 },
+      "bodyType": "sport_sedan",
+      "fuelTypes": ["petrol", "diesel", "hybrid"],
+      "packId": "bmw/g20-m340i",
+      "status": "active",
+      "matchPriority": 100
+    },
+    {
+      "id": "bmw.g80_m3",
+      "make": "BMW",
+      "model": "M3",
+      "modelAliases": ["M3 Competition"],
+      "generation": "G80",
+      "yearRange": { "from": 2021, "to": null },
+      "bodyType": "sport_sedan",
+      "fuelTypes": ["petrol"],
+      "packId": "bmw/g80-m3",
+      "status": "active",
+      "matchPriority": 100
+    },
+    {
+      "id": "tesla.model_3",
+      "make": "Tesla",
+      "model": "Model 3",
+      "modelAliases": ["Model 3 Long Range", "Model 3 Performance"],
+      "generation": "Highland",
+      "yearRange": { "from": 2017, "to": null },
+      "bodyType": "ev_sedan",
+      "fuelTypes": ["electric"],
+      "packId": "tesla/model-3",
+      "status": "active",
+      "matchPriority": 100
+    },
+    {
+      "id": "audi.8y_a3",
+      "make": "Audi",
+      "model": "A3",
+      "modelAliases": ["A3 2.0 TDI", "A3 Sportback"],
+      "generation": "8Y",
+      "yearRange": { "from": 2020, "to": null },
+      "bodyType": "compact_sedan",
+      "fuelTypes": ["petrol", "diesel", "hybrid"],
+      "packId": "audi/8y-a3",
+      "status": "active",
+      "matchPriority": 100
+    },
+    {
+      "id": "audi.b9_a4",
+      "make": "Audi",
+      "model": "A4",
+      "modelAliases": ["A4 Avant"],
+      "generation": "B9",
+      "yearRange": { "from": 2016, "to": null },
+      "bodyType": "executive_sedan",
+      "fuelTypes": ["petrol", "diesel", "hybrid"],
+      "packId": "audi/b9-a4",
+      "status": "active",
+      "matchPriority": 100
+    },
+    {
+      "id": "toyota.e210_corolla",
+      "make": "Toyota",
+      "model": "Corolla",
+      "modelAliases": ["Corolla Hybrid"],
+      "generation": "E210",
+      "yearRange": { "from": 2019, "to": null },
+      "bodyType": "compact_sedan",
+      "fuelTypes": ["petrol", "hybrid"],
+      "packId": "toyota/e210-corolla",
+      "status": "active",
+      "matchPriority": 100
+    }
+  ]
+}

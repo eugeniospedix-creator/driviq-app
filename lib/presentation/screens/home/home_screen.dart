@@ -25,22 +25,12 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _scroll = ScrollController();
-  double _parallax = 0;
-  late final AnimationController _entrance;
-
-  @override
-  void initState() {
-    super.initState();
-    _scroll.addListener(() => setState(() => _parallax = _scroll.offset));
-    _entrance = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..forward();
-  }
 
   @override
   void dispose() {
     _scroll.dispose();
-    _entrance.dispose();
     super.dispose();
   }
 
@@ -110,8 +100,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             asyncValue: healthAsync,
             builder: (health) => _CinematicHome(
               scroll: _scroll,
-              parallax: _parallax,
-              entrance: _entrance,
               heroHeight: screenHeight * 0.72,
               vehicle: vehicle,
               health: health,
@@ -128,8 +116,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
 class _CinematicHome extends StatelessWidget {
   const _CinematicHome({
     required this.scroll,
-    required this.parallax,
-    required this.entrance,
     required this.heroHeight,
     required this.vehicle,
     required this.health,
@@ -138,8 +124,6 @@ class _CinematicHome extends StatelessWidget {
   });
 
   final ScrollController scroll;
-  final double parallax;
-  final AnimationController entrance;
   final double heroHeight;
   final Vehicle vehicle;
   final VehicleHealth health;
@@ -149,12 +133,8 @@ class _CinematicHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final healthColor = DQ.healthColor(health.score);
-    final fade = CurvedAnimation(parent: entrance, curve: Curves.easeOutCubic);
-    final heroShift = parallax * 0.18;
 
-    return FadeTransition(
-      opacity: fade,
-      child: CustomScrollView(
+    return CustomScrollView(
         controller: scroll,
         physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
         slivers: [
@@ -164,13 +144,10 @@ class _CinematicHome extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Transform.translate(
-                    offset: Offset(0, heroShift),
-                    child: HomeVehicleHero(
-                      vehicle: vehicle,
-                      height: heroHeight,
-                      highlightColor: healthColor,
-                    ),
+                  HomeVehicleHero(
+                    vehicle: vehicle,
+                    height: heroHeight,
+                    highlightColor: healthColor,
                   ),
                   Positioned(
                     top: 18,
@@ -341,7 +318,6 @@ class _CinematicHome extends StatelessWidget {
             ),
           ),
         ],
-      ),
     );
   }
 }

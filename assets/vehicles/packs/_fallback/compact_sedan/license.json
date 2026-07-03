@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "licenseId": "drv-lic-fallback-sport-sedan",
+  "licenseType": "proprietary_in_house",
+  "rights": {
+    "commercialUse": true,
+    "appDistribution": true,
+    "modification": true,
+    "sublicense": false
+  },
+  "attribution": {
+    "required": false,
+    "displayText": null,
+    "url": null
+  },
+  "acquisition": {
+    "method": "driviq_studio_pipeline",
+    "date": "2026-07-03",
+    "internalReference": "studio/fallback/sport_sedan"
+  }
+}

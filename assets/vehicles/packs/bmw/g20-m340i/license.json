@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "licenseId": "drv-lic-bmw-g20-m340i-pending",
+  "licenseType": "pending_acquisition",
+  "rights": {
+    "commercialUse": true,
+    "appDistribution": true,
+    "modification": true,
+    "sublicense": false
+  },
+  "attribution": {
+    "required": false,
+    "displayText": null,
+    "url": null
+  },
+  "acquisition": {
+    "method": "driviq_studio_pipeline",
+    "date": null,
+    "internalReference": "studio/pending/bmw/g20-m340i"
+  }
+}

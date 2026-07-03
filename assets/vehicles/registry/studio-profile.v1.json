@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "profileId": "driviq_dark_studio_v1",
+  "label": "Driviq Dark Studio",
+  "description": "Canonical visual language for every vehicle entering the app. Source assets are never shown — only studio-processed outputs.",
+
+  "environment": {
+    "background": "#05080C",
+    "floor": "#0A1018",
+    "ambientColor": "#1A2838",
+    "voidGradient": ["#1C2632", "#05080C", "#05080C"]
+  },
+
+  "lighting": {
+    "keyLight": {
+      "color": "#E8F4FF",
+      "intensity": 1.0,
+      "azimuthDeg": 42,
+      "elevationDeg": 28
+    },
+    "fillLight": {
+      "color": "#4A9EFF",
+      "intensity": 0.22,
+      "azimuthDeg": -58,
+      "elevationDeg": 12
+    },
+    "rimLight": {
+      "color": "#00D4FF",
+      "intensity": 0.35,
+      "azimuthDeg": 165,
+      "elevationDeg": 18
+    },
+    "accentGlow": {
+      "color": "#00D4FF",
+      "opacity": 0.10,
+      "radius": 0.9
+    }
+  },
+
+  "camera": {
+    "angle": "three_quarter_front",
+    "yawDeg": 38,
+    "pitchDeg": 4,
+    "focalLengthMm": 85,
+    "sensorWidthMm": 36,
+    "distanceM": 5.2,
+    "targetHeightM": 0.55
+  },
+
+  "composition": {
+    "vehicleScale": 0.72,
+    "horizontalCenter": 0.5,
+    "verticalAnchor": 0.58,
+    "groundShadow": {
+      "opacity": 0.55,
+      "blur": 32,
+      "spread": 8,
+      "widthRatio": 0.84
+    }
+  },
+
+  "reflections": {
+    "floorReflectivity": 0.18,
+    "paintClearcoat": 0.85,
+    "specularHighlights": "soft_cinematic"
+  },
+
+  "outputs": {
+    "hero_home": {
+      "aspectRatio": "16:9",
+      "widthPx": 2048,
+      "heightPx": 1152,
+      "cropBias": "cinematic_wide",
+      "emotionalPriority": "maximum"
+    },
+    "hero_garage": {
+      "aspectRatio": "16:9",
+      "widthPx": 1600,
+      "heightPx": 900,
+      "cropBias": "card_hero"
+    },
+    "hero_scan": {
+      "aspectRatio": "9:16",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "cropBias": "full_bleed_portrait"
+    },
+    "hero_report": {
+      "aspectRatio": "4:3",
+      "widthPx": 1600,
+      "heightPx": 1200,
+      "cropBias": "diagnostic_panel"
+    },
+    "thumbnail": {
+      "aspectRatio": "16:9",
+      "widthPx": 512,
+      "heightPx": 288,
+      "cropBias": "catalog_tile"
+    }
+  },
+
+  "runtimeOverlay": {
+    "description": "Subtle live effects layered on studio artwork in-app — never replaces studio pass.",
+    "homeBreathingLight": true,
+    "homeParallax": true,
+    "homeFloorShadow": true
+  }
+}

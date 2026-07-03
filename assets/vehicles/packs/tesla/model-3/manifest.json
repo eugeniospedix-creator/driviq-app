@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "packId": "tesla/model-3",
+  "packVersion": "1.0.0",
+  "identity": {
+    "make": "Tesla",
+    "model": "Model 3",
+    "generation": "Highland",
+    "yearRange": { "from": 2017, "to": null },
+    "bodyType": "ev_sedan",
+    "fuelTypes": ["electric"]
+  },
+  "display": { "label": "Tesla Model 3", "subtitle": "Highland" },
+  "studio": {
+    "profileId": "driviq_dark_studio_v1",
+    "pipelineVersion": "1.0.0",
+    "processedAt": null,
+    "sourceType": "pending_studio_pass",
+    "sourceLabel": "Awaiting Driviq Studio Pipeline",
+    "fallbackPackId": "_fallback/ev_sedan"
+  },
+  "media": [],
+  "rendering": {
+    "preferredPresentation": "raster",
+    "anchorsRef": "anchors.json",
+    "studioProfile": "driviq_dark_studio_v1"
+  },
+  "provenance": {
+    "sourceType": "pending",
+    "sourceLabel": "Driviq Studio Pipeline",
+    "acquiredAt": null,
+    "licenseRef": "license.json"
+  },
+  "lifecycle": { "status": "active", "supersedes": null, "deprecatedBy": null }
+}

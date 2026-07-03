@@ -6,7 +6,6 @@ import '../../../application/providers/usecase_providers.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../providers/vehicle_providers.dart';
-import '../../widgets/animations/fade_slide_in.dart';
 import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/cards/vehicle_garage_card.dart';
 import '../../widgets/shell/dq_page.dart';
@@ -26,21 +25,15 @@ class GarageScreen extends ConsumerWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
             children: [
-              const FadeSlideIn(
-                child: SectionHeader(
-                  title: 'Garage',
-                  subtitle: 'Your vehicles, curated in a private showroom.',
-                ),
+              const SectionHeader(
+                title: 'Garage',
+                subtitle: 'Your vehicles, curated in a private showroom.',
               ),
               const SizedBox(height: 22),
-              ...overviews.asMap().entries.map((entry) {
-                final i = entry.key;
-                final overview = entry.value;
+              ...overviews.map((overview) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: FadeSlideIn(
-                    delay: Duration(milliseconds: 60 * i),
-                    child: VehicleGarageCard(
+                  child: VehicleGarageCard(
                       vehicle: overview.vehicle,
                       health: overview.health,
                       isPrimary: overview.vehicle.isPrimary,
@@ -51,12 +44,9 @@ class GarageScreen extends ConsumerWidget {
                         ref.invalidate(garageOverviewProvider);
                       },
                     ),
-                  ),
                 );
               }),
-              FadeSlideIn(
-                delay: Duration(milliseconds: 60 * overviews.length),
-                child: GestureDetector(
+              GestureDetector(
                   onTap: () => context.go(AppRoutes.scan),
                   child: GlassPanel(
                     child: Row(
@@ -96,7 +86,6 @@ class GarageScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
             ],
           );
         },

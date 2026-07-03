@@ -13,10 +13,8 @@ class MicPermissionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: DQ.voidBlack,
-      body: DqPage(
-        child: Padding(
+    return DqPage(
+      child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
             children: [
@@ -72,7 +70,6 @@ class MicPermissionScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
             ],
-          ),
         ),
       ),
     );

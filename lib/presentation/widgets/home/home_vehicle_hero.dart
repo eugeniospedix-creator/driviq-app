@@ -4,7 +4,7 @@ import '../../../core/constants/vehicle_artwork_paths.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/vehicle.dart';
 
-/// Home hero vehicle — instant static artwork, no async pipeline, car-first layout.
+/// Home hero vehicle — static artwork, stable layout, no scroll-driven motion.
 class HomeVehicleHero extends StatefulWidget {
   const HomeVehicleHero({
     super.key,

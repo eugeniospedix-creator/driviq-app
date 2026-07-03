@@ -89,10 +89,17 @@ flutter:
 
   assets:
     - assets/vehicles/metadata/
+    - assets/vehicles/registry/
+    - assets/vehicles/packs/
     - assets/vehicles/artwork/sport_sedan/exterior.png
     - assets/vehicles/artwork/ev_sedan/exterior.png
     - assets/vehicles/artwork/compact_sedan/exterior.png
     - assets/vehicles/artwork/executive_sedan/exterior.png
+    - assets/vehicles/packs/_fallback/sport_sedan/media/studio_master.png
+    - assets/vehicles/packs/_fallback/ev_sedan/media/studio_master.png
+    - assets/vehicles/packs/_fallback/compact_sedan/media/studio_master.png
+    - assets/vehicles/packs/_fallback/executive_sedan/media/studio_master.png
+    - assets/vehicles/packs/_fallback/universal/media/studio_master.png
     - assets/brand/driviq_app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,0 +1,44 @@
+{
+  "anchors": [
+    {
+      "componentId": "engine",
+      "positions": {
+        "exterior": { "x": 0.62, "y": 0.42, "z": 0.08 },
+        "engine": { "x": 0.50, "y": 0.48, "z": 0.15 }
+      }
+    },
+    {
+      "componentId": "front_right",
+      "positions": {
+        "exterior": { "x": 0.28, "y": 0.68, "z": 0.05 },
+        "suspension": { "x": 0.30, "y": 0.72, "z": 0.02 }
+      }
+    },
+    {
+      "componentId": "brakes",
+      "positions": {
+        "exterior": { "x": 0.38, "y": 0.69, "z": 0.04 }
+      }
+    },
+    {
+      "componentId": "suspension",
+      "positions": {
+        "exterior": { "x": 0.73, "y": 0.69, "z": 0.04 },
+        "suspension": { "x": 0.70, "y": 0.65, "z": 0.10 }
+      }
+    },
+    {
+      "componentId": "exhaust",
+      "positions": {
+        "exterior": { "x": 0.83, "y": 0.50, "z": 0.06 }
+      }
+    },
+    {
+      "componentId": "interior",
+      "positions": {
+        "interior": { "x": 0.50, "y": 0.45, "z": 0.12 },
+        "dashboard": { "x": 0.52, "y": 0.38, "z": 0.14 }
+      }
+    }
+  ]
+}

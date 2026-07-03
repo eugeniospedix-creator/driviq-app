@@ -26,7 +26,7 @@ class ScanScreen extends ConsumerStatefulWidget {
   ConsumerState<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProviderStateMixin {
+class _ScanScreenState extends ConsumerState<ScanScreen> {
   static const _uuid = Uuid();
 
   VehicleCatalogEntry? _selectedEntry;
@@ -37,14 +37,12 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
 
   late final TextEditingController _customMake;
   late final TextEditingController _customModel;
-  late final AnimationController _entrance;
 
   @override
   void initState() {
     super.initState();
     _customMake = TextEditingController();
     _customModel = TextEditingController();
-    _entrance = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..forward();
     _loadPrimary();
   }
 
@@ -71,7 +69,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
   void dispose() {
     _customMake.dispose();
     _customModel.dispose();
-    _entrance.dispose();
     super.dispose();
   }
 
@@ -211,7 +208,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
   Widget build(BuildContext context) {
     final vehicle = _previewVehicle;
     final canScan = ref.watch(canRunScanProvider);
-    final fade = CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic);
     final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return DecoratedBox(
@@ -226,15 +222,12 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
         fit: StackFit.expand,
         children: [
           if (vehicle != null)
-            FadeTransition(
-              opacity: fade,
-              child: Positioned.fill(
-                child: LayoutBuilder(
-                  builder: (context, constraints) => VehicleHeroStage(
-                    vehicle: vehicle,
-                    height: constraints.maxHeight,
-                    highlightColor: DQ.cyan,
-                  ),
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, constraints) => VehicleHeroStage(
+                  vehicle: vehicle,
+                  height: constraints.maxHeight,
+                  highlightColor: DQ.cyan,
                 ),
               ),
             ),
@@ -274,9 +267,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
                 if (vehicle != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
-                    child: FadeTransition(
-                      opacity: fade,
-                      child: Column(
+                    child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -297,11 +288,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
                         ],
                       ),
                     ),
-                  ),
                 const Spacer(),
-                FadeTransition(
-                  opacity: fade,
-                  child: Container(
+                Container(
                     width: double.infinity,
                     padding: EdgeInsets.fromLTRB(22, 22, 22, 18 + bottomInset),
                     decoration: BoxDecoration(
@@ -360,7 +348,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen> with SingleTickerProvid
                       ],
                     ),
                   ),
-                ),
               ],
             ),
           ),
