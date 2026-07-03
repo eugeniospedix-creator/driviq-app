@@ -13,8 +13,8 @@ class HomeWeatherContext {
   final bool isLive;
 
   static const fallback = HomeWeatherContext(
-    mood: DriviqWeatherMood.studio,
-    effectsEnabled: false,
+    mood: DriviqWeatherMood.unknown,
+    effectsEnabled: true,
     isLive: false,
   );
 

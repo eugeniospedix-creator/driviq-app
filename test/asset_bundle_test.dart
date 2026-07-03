@@ -6,8 +6,14 @@ import 'package:driviq/core/constants/vehicle_artwork_paths.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('all hero vehicle artwork assets are bundled', () async {
+  test('all Kenney hero assets are bundled', () async {
     for (final path in VehicleArtworkPaths.allHeroes) {
+      await expectLater(rootBundle.load(path), completes);
+    }
+  });
+
+  test('all Kenney GLB models are bundled', () async {
+    for (final path in VehicleArtworkPaths.allModels) {
       await expectLater(rootBundle.load(path), completes);
     }
   });

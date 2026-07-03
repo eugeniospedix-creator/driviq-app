@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/dq_theme.dart';
 import 'presentation/providers/bootstrap_provider.dart';
-import 'presentation/screens/launch/launch_splash_screen.dart';
+import 'presentation/screens/splash/splash_screen.dart';
 
 class DriviqApp extends ConsumerStatefulWidget {
   const DriviqApp({super.key});
@@ -25,7 +25,7 @@ class _DriviqAppState extends ConsumerState<DriviqApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: DriviqTheme.dark,
-        home: LaunchSplashScreen(
+        home: SplashScreen(
           bootstrapReady: bootstrapReady,
           onComplete: () {
             if (mounted) setState(() => _showLaunch = false);

@@ -1,20 +1,31 @@
 import '../enums/driviq_weather_mood.dart';
 
 /// Maps external weather condition codes to [DriviqWeatherMood].
-/// Ready for OpenWeather / WeatherKit integration — not wired yet.
 abstract final class WeatherMoodMapper {
-  static DriviqWeatherMood fromOpenWeatherMain(String? main, {required bool isNight}) {
-    if (isNight) return DriviqWeatherMood.night;
+  static bool isNightHour(int hour) => hour >= 20 || hour < 6;
 
-    return switch (main?.toLowerCase()) {
-      'clear' => DriviqWeatherMood.sunny,
-      'clouds' => DriviqWeatherMood.cloudy,
-      'rain' || 'drizzle' || 'thunderstorm' => DriviqWeatherMood.rainy,
-      'snow' => DriviqWeatherMood.snowy,
-      'mist' || 'fog' || 'haze' => DriviqWeatherMood.foggy,
-      _ => DriviqWeatherMood.studio,
-    };
+  static DriviqWeatherMood fromOpenWeather({
+    required String? main,
+    required String? description,
+    required bool isNight,
+  }) {
+    final token = '${main ?? ''} ${description ?? ''}'.toLowerCase();
+
+    if (token.contains('thunder')) return DriviqWeatherMood.storm;
+    if (token.contains('snow') || token.contains('sleet')) return DriviqWeatherMood.snow;
+    if (token.contains('rain') || token.contains('drizzle')) return DriviqWeatherMood.rain;
+    if (token.contains('fog') || token.contains('mist') || token.contains('haze')) {
+      return DriviqWeatherMood.fog;
+    }
+    if (token.contains('cloud') || token.contains('overcast')) return DriviqWeatherMood.cloudy;
+    if (token.contains('clear')) {
+      return isNight ? DriviqWeatherMood.clearNight : DriviqWeatherMood.clearDay;
+    }
+
+    return DriviqWeatherMood.unknown;
   }
 
-  static bool isNightHour(int hour) => hour >= 20 || hour < 6;
+  static DriviqWeatherMood fromCoordinatesFallback({required bool isNight}) {
+    return isNight ? DriviqWeatherMood.clearNight : DriviqWeatherMood.clearDay;
+  }
 }

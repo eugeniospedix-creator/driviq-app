@@ -4,13 +4,35 @@ import 'package:driviq/domain/catalog/weather_mood_mapper.dart';
 import 'package:driviq/domain/enums/driviq_weather_mood.dart';
 
 void main() {
-  test('maps OpenWeather main codes to moods', () {
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Clear', isNight: false), DriviqWeatherMood.sunny);
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Clouds', isNight: false), DriviqWeatherMood.cloudy);
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Rain', isNight: false), DriviqWeatherMood.rainy);
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Snow', isNight: false), DriviqWeatherMood.snowy);
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Fog', isNight: false), DriviqWeatherMood.foggy);
-    expect(WeatherMoodMapper.fromOpenWeatherMain('Clear', isNight: true), DriviqWeatherMood.night);
+  test('maps OpenWeather conditions to moods', () {
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Clear', description: null, isNight: false),
+      DriviqWeatherMood.clearDay,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Clear', description: null, isNight: true),
+      DriviqWeatherMood.clearNight,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Clouds', description: 'overcast', isNight: false),
+      DriviqWeatherMood.cloudy,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Rain', description: 'light rain', isNight: false),
+      DriviqWeatherMood.rain,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Snow', description: null, isNight: false),
+      DriviqWeatherMood.snow,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Thunderstorm', description: null, isNight: false),
+      DriviqWeatherMood.storm,
+    );
+    expect(
+      WeatherMoodMapper.fromOpenWeather(main: 'Fog', description: null, isNight: false),
+      DriviqWeatherMood.fog,
+    );
   });
 
   test('detects night hours', () {

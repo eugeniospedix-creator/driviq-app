@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/vehicle_artwork_paths.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/home_weather_context.dart';
 import '../../../domain/entities/vehicle.dart';
+import '../vehicle/vehicle_hero_viewport.dart';
 import 'weather_vehicle_atmosphere.dart';
 
-/// Home hero vehicle — static artwork with optional weather atmosphere overlay.
-class HomeVehicleHero extends StatefulWidget {
+/// Home hero vehicle — stable Kenney viewport + optional weather atmosphere.
+class HomeVehicleHero extends StatelessWidget {
   const HomeVehicleHero({
     super.key,
     required this.vehicle,
@@ -22,25 +22,10 @@ class HomeVehicleHero extends StatefulWidget {
   final HomeWeatherContext weather;
 
   @override
-  State<HomeVehicleHero> createState() => _HomeVehicleHeroState();
-}
-
-class _HomeVehicleHeroState extends State<HomeVehicleHero> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    for (final path in VehicleArtworkPaths.allHeroes) {
-      precacheImage(AssetImage(path), context);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final accent = widget.highlightColor ?? DQ.cyan;
-    final h = widget.height;
-    final carHeight = h * 0.66;
-    final assetPath = VehicleArtworkPaths.heroFor(widget.vehicle);
-    final weather = widget.weather;
+    final accent = highlightColor ?? DQ.cyan;
+    final h = height;
+    final viewportHeight = h * 0.66;
 
     return SizedBox(
       height: h,
@@ -62,28 +47,9 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
           Positioned.fill(
             child: WeatherVehicleAtmosphere(
               mood: weather.mood,
-              height: h,
               effectsEnabled: weather.effectsEnabled,
               layer: WeatherAtmosphereLayer.behindVehicle,
               accentColor: accent,
-            ),
-          ),
-          Positioned(
-            top: h * 0.06,
-            left: -h * 0.1,
-            right: -h * 0.1,
-            height: h * 0.5,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment.topCenter,
-                  radius: 0.9,
-                  colors: [
-                    accent.withValues(alpha: 0.10),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
             ),
           ),
           Positioned(
@@ -105,17 +71,19 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
             ),
           ),
           Align(
-            alignment: const Alignment(0, -0.02),
+            alignment: Alignment.center,
             child: SizedBox(
-              height: carHeight,
+              height: viewportHeight,
               width: double.infinity,
-              child: _HeroImage(assetPath: assetPath),
+              child: VehicleHeroViewport(
+                vehicle: vehicle,
+                enableIdleMotion: true,
+              ),
             ),
           ),
           Positioned.fill(
             child: WeatherVehicleAtmosphere(
               mood: weather.mood,
-              height: h,
               effectsEnabled: weather.effectsEnabled,
               layer: WeatherAtmosphereLayer.inFrontOfVehicle,
               accentColor: accent,
@@ -142,28 +110,6 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _HeroImage extends StatelessWidget {
-  const _HeroImage({required this.assetPath});
-
-  final String assetPath;
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      assetPath,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.high,
-      gaplessPlayback: true,
-      errorBuilder: (_, _, _) => Image.asset(
-        VehicleArtworkPaths.fallback,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-        gaplessPlayback: true,
       ),
     );
   }

@@ -1,0 +1,12 @@
+{
+  "source": "Kenney Car Kit",
+  "sourceUrl": "https://kenney.nl/assets/car-kit",
+  "license": "CC0 1.0 Universal",
+  "licenseFile": "LICENSE.txt",
+  "variants": [
+    { "id": "sedan", "hero": "sedan/hero.png", "model": "sedan/model.glb" },
+    { "id": "suv", "hero": "suv/hero.png", "model": "suv/model.glb" },
+    { "id": "hatchback", "hero": "hatchback/hero.png", "model": "hatchback/model.glb" }
+  ],
+  "defaultVariant": "sedan"
+}

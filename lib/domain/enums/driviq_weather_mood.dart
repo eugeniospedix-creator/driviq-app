@@ -1,14 +1,20 @@
 /// Ambient mood for the Home vehicle hero — driven by local weather/time.
 enum DriviqWeatherMood {
-  studio,
-  sunny,
+  clearDay,
+  clearNight,
   cloudy,
-  rainy,
-  snowy,
-  foggy,
-  night;
+  rain,
+  snow,
+  fog,
+  storm,
+  unknown;
 
-  bool get isAnimated => this == DriviqWeatherMood.rainy || this == DriviqWeatherMood.snowy;
+  bool get isAnimated =>
+      this == DriviqWeatherMood.rain ||
+      this == DriviqWeatherMood.snow ||
+      this == DriviqWeatherMood.storm;
 
   bool get usesParticles => isAnimated;
+
+  bool get usesLightning => this == DriviqWeatherMood.storm;
 }
