@@ -70,12 +70,12 @@ class _AiNeuralStatusCardState extends State<AiNeuralStatusCard> with SingleTick
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Neural Engine Active',
+                  'Acoustic Intelligence',
                   style: TextStyle(color: DQ.textPrimary, fontSize: 16, fontWeight: FontWeight.w800),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Learning your vehicle acoustic baseline from every scan.',
+                  'Every scan refines your vehicle acoustic signature.',
                   style: TextStyle(color: DQ.textSecondary, fontSize: 13, height: 1.35),
                 ),
               ],

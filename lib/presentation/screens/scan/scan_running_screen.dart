@@ -12,7 +12,7 @@ import '../../../services/interfaces/diagnosis_services.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/scan/scan_visuals.dart';
 import '../../widgets/scan/scan_waveform_panel.dart';
-import '../../widgets/vehicle/interactive_vehicle_viewer.dart';
+import '../../widgets/vehicle/vehicle_hero_stage.dart';
 
 class ScanRunningScreen extends ConsumerStatefulWidget {
   const ScanRunningScreen({super.key});
@@ -96,9 +96,9 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
           child: Column(
             children: [
               const SizedBox(height: 12),
-              Text(
-                'DRIVIQ CORE',
-                style: const TextStyle(
+              const Text(
+                'LISTENING',
+                style: TextStyle(
                   color: DQ.textMuted,
                   letterSpacing: 2.4,
                   fontWeight: FontWeight.w800,
@@ -108,15 +108,29 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
               const SizedBox(height: 24),
               Expanded(
                 child: vehicleAsync.when(
-                  loading: () => const SizedBox(),
-                  error: (_, _) => const SizedBox(),
+                  loading: () => const Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: DQ.cyan),
+                    ),
+                  ),
+                  error: (_, _) => Center(
+                    child: Text(
+                      'Vehicle unavailable',
+                      style: TextStyle(color: DQ.textMuted.withValues(alpha: 0.85), fontSize: 14),
+                    ),
+                  ),
                   data: (vehicle) => vehicle == null
                       ? const SizedBox()
-                      : RepaintBoundary(
-                          child: InteractiveVehicleViewer(
-                            vehicle: vehicle,
-                            scanning: _running,
-                            showGlow: true,
+                      : LayoutBuilder(
+                          builder: (context, constraints) => RepaintBoundary(
+                            child: VehicleHeroStage(
+                              vehicle: vehicle,
+                              height: constraints.maxHeight,
+                              scanning: _running,
+                              highlightColor: DQ.cyan,
+                            ),
                           ),
                         ),
                 ),

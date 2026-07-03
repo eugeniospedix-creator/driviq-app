@@ -52,6 +52,19 @@ class FaultDetailCard extends StatelessWidget {
 
   Color get _color => FaultSeverityColors.accent(fault.severity);
 
+  static String _repairEstimate(ComponentFault fault) {
+    final minCost = fault.estimatedRepairCostMin!.round();
+    final maxCost = fault.estimatedRepairCostMax?.round();
+    final cost = maxCost != null ? '€$minCost – €$maxCost' : 'From €$minCost';
+    final minHours = fault.estimatedRepairHoursMin;
+    final maxHours = fault.estimatedRepairHoursMax;
+    if (minHours != null && maxHours != null) {
+      return '$cost • ${minHours.toStringAsFixed(1)}–${maxHours.toStringAsFixed(1)} hours';
+    }
+    if (minHours != null) return '$cost • ${minHours.toStringAsFixed(1)} hours';
+    return cost;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -102,11 +115,7 @@ class FaultDetailCard extends StatelessWidget {
         _Section(title: 'Can I still drive?', body: fault.driveability.explanation),
         if (fault.estimatedRepairCostMin != null) ...[
           const SizedBox(height: 16),
-          _Section(
-            title: 'Estimated repair',
-            body: '€${fault.estimatedRepairCostMin!.round()} – €${fault.estimatedRepairCostMax!.round()} • '
-                '${fault.estimatedRepairHoursMin!.toStringAsFixed(1)}–${fault.estimatedRepairHoursMax!.toStringAsFixed(1)} hours',
-          ),
+          _Section(title: 'Estimated repair', body: _repairEstimate(fault)),
         ],
         if (fault.consequencesIfIgnored != null) ...[
           const SizedBox(height: 16),

@@ -9,12 +9,14 @@ class DqTextField extends StatelessWidget {
     required this.label,
     this.hint,
     this.keyboardType,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final String label;
   final String? hint;
   final TextInputType? keyboardType;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +42,7 @@ class DqTextField extends StatelessWidget {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            onChanged: onChanged,
             style: const TextStyle(color: DQ.textPrimary, fontSize: 16, fontWeight: FontWeight.w600),
             cursorColor: DQ.cyan,
             decoration: InputDecoration(

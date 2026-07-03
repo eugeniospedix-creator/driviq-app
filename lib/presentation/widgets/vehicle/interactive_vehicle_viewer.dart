@@ -44,24 +44,20 @@ class _InteractiveVehicleViewerState extends ConsumerState<InteractiveVehicleVie
   late final AnimationController _phase;
   Vehicle3DViewState _viewState = const Vehicle3DViewState();
   late VehicleViewMode _viewMode;
+  double _baseZoom = 1.0;
 
   @override
   void initState() {
     super.initState();
     _viewMode = widget.viewMode;
-    _phase = AnimationController(vsync: this, duration: const Duration(seconds: 4));
-    if (widget.scanning) _phase.repeat();
+    _phase = AnimationController(vsync: this, duration: const Duration(seconds: 6));
+    _phase.repeat();
   }
 
   @override
   void didUpdateWidget(covariant InteractiveVehicleViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.scanning && !_phase.isAnimating) {
-      _phase.repeat();
-    } else if (!widget.scanning && _phase.isAnimating) {
-      _phase.stop();
-      _phase.value = 0;
-    }
+    if (!_phase.isAnimating) _phase.repeat();
   }
 
   @override
@@ -78,22 +74,33 @@ class _InteractiveVehicleViewerState extends ConsumerState<InteractiveVehicleVie
     return metadataAsync.when(
       loading: () => SizedBox(
         height: widget.height,
-        child: const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: DQ.cyan))),
+        child: const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2, color: DQ.cyan),
+          ),
+        ),
       ),
-      error: (_, _) => SizedBox(height: widget.height),
+      error: (error, _) => SizedBox(
+        height: widget.height,
+        child: Center(
+          child: Text(
+            'Could not load vehicle model',
+            style: TextStyle(color: DQ.textMuted.withValues(alpha: 0.8), fontSize: 13),
+          ),
+        ),
+      ),
       data: (metadata) {
         final viewer = GestureDetector(
-          onPanUpdate: widget.interactive
-              ? (d) => setState(() {
-                    _viewState = _viewState.copyWith(
-                      yaw: _viewState.yaw + d.delta.dx * 0.004,
-                      pitch: (_viewState.pitch + d.delta.dy * 0.003).clamp(-0.35, 0.35),
-                    );
-                  })
-              : null,
+          onScaleStart: widget.interactive ? (_) => _baseZoom = _viewState.zoom : null,
           onScaleUpdate: widget.interactive
               ? (d) => setState(() {
-                    _viewState = _viewState.copyWith(zoom: _viewState.zoom * d.scale);
+                    _viewState = _viewState.copyWith(
+                      yaw: _viewState.yaw + d.focalPointDelta.dx * 0.004,
+                      pitch: (_viewState.pitch + d.focalPointDelta.dy * 0.003).clamp(-0.35, 0.35),
+                      zoom: (_baseZoom * d.scale).clamp(0.55, 2.2),
+                    );
                   })
               : null,
           child: Stack(

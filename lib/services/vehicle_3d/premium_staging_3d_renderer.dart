@@ -41,7 +41,7 @@ class PremiumStaging3DRenderer implements VehicleRenderer {
                 viewState: viewState,
                 scanning: scanning,
                 animationPhase: animationPhase,
-                stagingLabel: metadata.stagingLabel ?? 'Digital Twin Preview',
+                stagingLabel: metadata.stagingLabel ?? vehicle.displayName,
               ),
             ),
             ...faults.map((fault) {
@@ -139,6 +139,7 @@ class _Staging3DPainter extends CustomPainter {
     final scale = viewState.zoom;
 
     _drawAmbientGlow(canvas, s, center, scale);
+    _paintFloorReflection(canvas, s, center);
 
     canvas.save();
     canvas.translate(center.dx, center.dy);
@@ -186,18 +187,41 @@ class _Staging3DPainter extends CustomPainter {
       text: TextSpan(
         text: stagingLabel.toUpperCase(),
         style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.28),
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 2,
+          color: Colors.white.withValues(alpha: 0.14),
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.6,
         ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    tp.paint(canvas, Offset((s.width - tp.width) / 2, s.height * 0.08));
+    tp.paint(canvas, Offset((s.width - tp.width) / 2, s.height * 0.06));
+  }
+
+  void _paintFloorReflection(Canvas canvas, Size s, Offset center) {
+    final floor = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          DQ.cyan.withValues(alpha: scanning ? 0.12 : 0.06),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCenter(center: Offset(center.dx, center.dy + s.height * 0.18), width: s.width * 0.7, height: s.height * 0.08));
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(center.dx, center.dy + s.height * 0.18), width: s.width * 0.55, height: s.height * 0.06),
+      floor,
+    );
   }
 
   void _paintExterior(Canvas canvas, Size s, String bodyType) {
+    final fill = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.white.withValues(alpha: 0.12),
+          Colors.white.withValues(alpha: 0.04),
+        ],
+      ).createShader(Rect.fromCenter(center: Offset.zero, width: s.width * 0.76, height: s.height * 0.44));
     final line = Paint()
       ..color = Colors.white.withValues(alpha: 0.82)
       ..style = PaintingStyle.stroke
@@ -224,6 +248,7 @@ class _Staging3DPainter extends CustomPainter {
       ..strokeWidth = 18
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18);
     canvas.drawPath(body, glow);
+    canvas.drawPath(body, fill);
     canvas.drawPath(body, line);
 
     if (bodyType == 'ev_sedan') {

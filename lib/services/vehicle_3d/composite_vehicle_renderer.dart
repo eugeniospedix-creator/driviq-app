@@ -7,18 +7,23 @@ import '../../domain/entities/vehicle_3d_view_state.dart';
 import '../../domain/enums/vehicle_view_mode.dart';
 import '../interfaces/vehicle_renderer.dart';
 import 'glb_vehicle_renderer.dart';
-import 'premium_staging_3d_renderer.dart';
+import 'layered_artwork_vehicle_renderer.dart';
+import 'vehicle_artwork_resolver.dart';
 import 'vehicle_asset_pipeline.dart';
 
-/// Selects GLB renderer when asset is bundled; otherwise premium staging twin.
+/// Rendering pipeline priority:
+/// 1. Licensed GLB (when bundled)
+/// 2. Layered pre-rendered artwork + live studio compositing
 class CompositeVehicleRenderer implements VehicleRenderer {
   CompositeVehicleRenderer(this._pipeline)
       : _glb = GlbVehicleRenderer(),
-        _staging = PremiumStaging3DRenderer();
+        _artwork = LayeredArtworkVehicleRenderer(VehicleArtworkResolver()),
+        _resolver = VehicleArtworkResolver();
 
   final VehicleAssetPipeline _pipeline;
   final GlbVehicleRenderer _glb;
-  final PremiumStaging3DRenderer _staging;
+  final LayeredArtworkVehicleRenderer _artwork;
+  final VehicleArtworkResolver _resolver;
 
   @override
   Widget build({
@@ -33,43 +38,43 @@ class CompositeVehicleRenderer implements VehicleRenderer {
     List<ComponentFault> faults = const [],
     double animationPhase = 0,
   }) {
-    return FutureBuilder<bool>(
-      future: _pipeline.hasBundledGlb(metadata.glbAssetPath),
+    return FutureBuilder<_RenderMode>(
+      future: _resolveMode(vehicle: vehicle, metadata: metadata),
       builder: (context, snapshot) {
-        final useGlb = snapshot.data == true;
-        final renderer = useGlb ? _glb : _staging;
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            renderer.build(
-              vehicle: vehicle,
-              viewMode: viewMode,
-              viewState: viewState,
-              metadata: metadata,
-              scanning: scanning,
-              interactive: interactive,
-              highlightedFault: highlightedFault,
-              onFaultSelected: onFaultSelected,
-              faults: faults,
-              animationPhase: animationPhase,
-            ),
-            if (!useGlb && interactive)
-              Positioned(
-                left: 12,
-                bottom: 8,
-                child: Text(
-                  'STAGING ASSET',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.35),
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-              ),
-          ],
+        final mode = snapshot.data ?? _RenderMode.artwork;
+        final renderer = switch (mode) {
+          _RenderMode.glb => _glb,
+          _RenderMode.artwork => _artwork,
+        };
+
+        return renderer.build(
+          vehicle: vehicle,
+          viewMode: viewMode,
+          viewState: viewState,
+          metadata: metadata,
+          scanning: scanning,
+          interactive: interactive,
+          highlightedFault: highlightedFault,
+          onFaultSelected: onFaultSelected,
+          faults: faults,
+          animationPhase: animationPhase,
         );
       },
     );
   }
+
+  Future<_RenderMode> _resolveMode({
+    required Vehicle vehicle,
+    required Vehicle3DMetadata metadata,
+  }) async {
+    if (await _pipeline.hasBundledGlb(metadata.glbAssetPath)) {
+      return _RenderMode.glb;
+    }
+    if (await _resolver.hasArtwork(vehicle: vehicle, metadata: metadata)) {
+      return _RenderMode.artwork;
+    }
+    return _RenderMode.artwork;
+  }
 }
+
+enum _RenderMode { glb, artwork }

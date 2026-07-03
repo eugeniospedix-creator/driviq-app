@@ -56,6 +56,25 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/brand/driviq_app_icon.png
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: assets/brand/driviq_app_icon.png
+    background_color: "#05080C"
+    theme_color: "#05080C"
+  macos:
+    generate: true
+    image_path: assets/brand/driviq_app_icon.png
+  windows:
+    generate: true
+    image_path: assets/brand/driviq_app_icon.png
+    icon_size: 256
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -70,6 +89,11 @@ flutter:
 
   assets:
     - assets/vehicles/metadata/
+    - assets/vehicles/artwork/sport_sedan/exterior.png
+    - assets/vehicles/artwork/ev_sedan/exterior.png
+    - assets/vehicles/artwork/compact_sedan/exterior.png
+    - assets/vehicles/artwork/executive_sedan/exterior.png
+    - assets/brand/driviq_app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

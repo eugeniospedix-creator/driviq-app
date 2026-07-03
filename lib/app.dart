@@ -4,14 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/dq_theme.dart';
 import 'presentation/providers/bootstrap_provider.dart';
+import 'presentation/screens/launch/launch_splash_screen.dart';
 
-class DriviqApp extends ConsumerWidget {
+class DriviqApp extends ConsumerStatefulWidget {
   const DriviqApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DriviqApp> createState() => _DriviqAppState();
+}
+
+class _DriviqAppState extends ConsumerState<DriviqApp> {
+  bool _showLaunch = true;
+
+  @override
+  Widget build(BuildContext context) {
     final bootstrap = ref.watch(bootstrapProvider);
-    final router = ref.watch(routerProvider);
+    final bootstrapReady = bootstrap.hasValue;
+
+    if (_showLaunch) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: DriviqTheme.dark,
+        home: LaunchSplashScreen(
+          bootstrapReady: bootstrapReady,
+          onComplete: () {
+            if (mounted) setState(() => _showLaunch = false);
+          },
+        ),
+      );
+    }
 
     return bootstrap.when(
       loading: () => MaterialApp(
@@ -40,7 +61,7 @@ class DriviqApp extends ConsumerWidget {
         title: 'Driviq',
         debugShowCheckedModeBanner: false,
         theme: DriviqTheme.dark,
-        routerConfig: router,
+        routerConfig: ref.watch(routerProvider),
       ),
     );
   }

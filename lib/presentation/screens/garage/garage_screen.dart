@@ -29,7 +29,7 @@ class GarageScreen extends ConsumerWidget {
               const FadeSlideIn(
                 child: SectionHeader(
                   title: 'Garage',
-                  subtitle: 'A digital vehicle room for every car you own.',
+                  subtitle: 'Your vehicles, curated in a private showroom.',
                 ),
               ),
               const SizedBox(height: 22),
@@ -43,6 +43,7 @@ class GarageScreen extends ConsumerWidget {
                     child: VehicleGarageCard(
                       vehicle: overview.vehicle,
                       health: overview.health,
+                      isPrimary: overview.vehicle.isPrimary,
                       onTap: () async {
                         await ref.read(setPrimaryVehicleUseCaseProvider).execute(overview.vehicle.id);
                         ref.invalidate(primaryVehicleProvider);
@@ -84,7 +85,7 @@ class GarageScreen extends ConsumerWidget {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Configure via Vehicle Passport in Scan',
+                                'Identify in Scan',
                                 style: TextStyle(color: DQ.textMuted, fontSize: 13),
                               ),
                             ],

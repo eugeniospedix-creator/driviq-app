@@ -5,8 +5,7 @@ import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/vehicle.dart';
 import '../../../domain/entities/vehicle_health.dart';
 import '../health/health_ring.dart';
-import '../shell/dq_page.dart';
-import '../vehicle/interactive_vehicle_viewer.dart';
+import '../vehicle/vehicle_hero_stage.dart';
 
 class VehicleGarageCard extends StatelessWidget {
   const VehicleGarageCard({
@@ -14,13 +13,13 @@ class VehicleGarageCard extends StatelessWidget {
     required this.vehicle,
     required this.health,
     required this.onTap,
-    this.compact = false,
+    this.isPrimary = false,
   });
 
   final Vehicle vehicle;
   final VehicleHealth health;
   final VoidCallback onTap;
-  final bool compact;
+  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
@@ -31,66 +30,121 @@ class VehicleGarageCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: DarkPanel(
-        glowColor: color,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(DQ.radiusXl),
+          border: Border.all(
+            color: isPrimary ? color.withValues(alpha: 0.45) : Colors.white.withValues(alpha: 0.06),
+            width: isPrimary ? 1.4 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: isPrimary ? 0.14 : 0.06),
+              blurRadius: 36,
+              offset: const Offset(0, 18),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
+            Stack(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (vehicle.nickname != null)
-                        Text(
-                          vehicle.nickname!.toUpperCase(),
-                          style: const TextStyle(
-                            color: DQ.cyan,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.6,
-                          ),
-                        ),
-                      Text(
-                        vehicle.displayName,
-                        style: const TextStyle(
-                          color: DQ.textPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
+                VehicleHeroStage(
+                  vehicle: vehicle,
+                  height: 220,
+                  highlightColor: color,
+                  compact: true,
+                  interactive: false,
+                  borderRadius: 0,
+                ),
+                if (isPrimary)
+                  Positioned(
+                    top: 14,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: DQ.voidBlack.withValues(alpha: 0.62),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: color.withValues(alpha: 0.45)),
+                      ),
+                      child: Text(
+                        'PRIMARY',
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${vehicle.year} • ${vehicle.mileageKm ?? 0} km',
-                        style: const TextStyle(color: DQ.textMuted, fontSize: 14),
+                    ),
+                  ),
+                Positioned(
+                  right: 14,
+                  top: 14,
+                  child: HealthRing(score: health.score, status: health.status, size: 68),
+                ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    DQ.graphite2.withValues(alpha: 0.92),
+                    DQ.voidBlack,
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (vehicle.nickname != null && vehicle.nickname!.isNotEmpty)
+                    Text(
+                      vehicle.nickname!.toUpperCase(),
+                      style: const TextStyle(
+                        color: DQ.cyan,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.6,
+                      ),
+                    ),
+                  Text(
+                    vehicle.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: DQ.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${vehicle.year} • ${vehicle.mileageKm ?? 0} km',
+                    style: const TextStyle(color: DQ.textMuted, fontSize: 13),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      _Chip(label: health.status.label, color: color),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Last scan $lastScan',
+                          style: const TextStyle(color: DQ.textSecondary, fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                HealthRing(score: health.score, status: health.status, size: compact ? 72 : 84),
-              ],
-            ),
-            SizedBox(height: compact ? 14 : 18),
-            InteractiveVehicleViewer(
-              vehicle: vehicle,
-              height: compact ? 140 : 200,
-              interactive: false,
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                _Chip(label: health.status.label, color: color),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Last scan $lastScan',
-                    style: const TextStyle(color: DQ.textMuted, fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -109,7 +163,7 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: color.withValues(alpha: 0.35)),
       ),
