@@ -4,16 +4,19 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
-import '../../../domain/enums/fault_severity.dart';
 import '../../../domain/entities/component_fault.dart';
+import '../../../domain/entities/home_weather_context.dart';
 import '../../../domain/entities/scan_session.dart';
 import '../../../domain/entities/vehicle.dart';
+import '../../../domain/enums/fault_severity.dart';
 import '../../providers/vehicle_providers.dart';
+import '../../providers/weather_providers.dart';
 import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/buttons/dq_button.dart';
 import '../../widgets/cards/diagnosis_detail.dart';
 import '../../widgets/shell/dq_page.dart';
 import '../../widgets/vehicle/driviq_studio_vehicle.dart';
+import '../../widgets/vehicle/vehicle_photo_capture.dart';
 
 class DiagnosisResultScreen extends ConsumerStatefulWidget {
   const DiagnosisResultScreen({super.key});
@@ -28,9 +31,18 @@ class _DiagnosisResultScreenState extends ConsumerState<DiagnosisResultScreen> {
   @override
   Widget build(BuildContext context) {
     final vehicleAsync = ref.watch(primaryVehicleProvider);
+    final weather = ref.watch(homeWeatherContextProvider).asData?.value ?? HomeWeatherContext.fallback;
 
     return Scaffold(
       backgroundColor: DQ.voidBlack,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: DQ.textPrimary),
+          onPressed: () => context.go(AppRoutes.home),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: DqPage(
         child: DqAsyncBody(
           asyncValue: vehicleAsync,
@@ -49,7 +61,13 @@ class _DiagnosisResultScreenState extends ConsumerState<DiagnosisResultScreen> {
                   vehicle: vehicle,
                   scan: scan,
                   selected: _selected,
+                  weather: weather,
                   onSelect: (f) => setState(() => _selected = f),
+                  onAddPhoto: () => captureVehiclePhotoFlow(
+                    context: context,
+                    ref: ref,
+                    vehicle: vehicle,
+                  ),
                 );
               },
             );
@@ -65,13 +83,17 @@ class _ResultBody extends StatelessWidget {
     required this.vehicle,
     required this.scan,
     required this.selected,
+    required this.weather,
     required this.onSelect,
+    required this.onAddPhoto,
   });
 
   final Vehicle vehicle;
   final ScanSession scan;
   final ComponentFault? selected;
+  final HomeWeatherContext weather;
   final ValueChanged<ComponentFault> onSelect;
+  final Future<Vehicle?> Function() onAddPhoto;
 
   @override
   Widget build(BuildContext context) {
@@ -119,9 +141,12 @@ class _ResultBody extends StatelessWidget {
               height: 256,
               highlightColor: DQ.healthColor(scan.healthScore),
               interactive: true,
+              mood: weather.mood,
+              weatherEffectsEnabled: weather.showEffects,
               faults: faults,
               highlightedFault: active,
               onFaultSelected: onSelect,
+              onAddPhoto: () => onAddPhoto(),
             ),
           ),
         ),

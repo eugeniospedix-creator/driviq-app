@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/entities/vehicle.dart';
+
+import '../../presentation/screens/vehicle_3d/create_vehicle_3d_screen.dart';
 import '../../presentation/screens/diagnosis/diagnosis_result_screen.dart';
 import '../../presentation/screens/garage/garage_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
@@ -104,6 +107,20 @@ final routerProvider = Provider<GoRouter>((ref) {
             );
           },
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.createVehicle3D,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final vehicle = state.extra as Vehicle;
+          return CustomTransitionPage(
+            child: CreateVehicle3DScreen(vehicle: vehicle),
+            transitionsBuilder: (context, animation, secondary, child) => FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              child: child,
+            ),
+          );
+        },
       ),
     ],
   );

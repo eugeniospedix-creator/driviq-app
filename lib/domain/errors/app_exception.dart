@@ -18,3 +18,7 @@ final class PersistenceException extends AppException {
 final class ValidationException extends AppException {
   const ValidationException(super.message);
 }
+
+final class VehiclePhotoException extends AppException {
+  const VehiclePhotoException(super.message);
+}

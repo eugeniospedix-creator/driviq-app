@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../launch/driviq_logo_geometry.dart';
+import '../launch/driviq_splash_animation.dart';
 import 'home_vehicle_body_type.dart';
 
 /// Side-profile sedan geometry — directly derived from the approved Driviq icon silhouette.
@@ -87,7 +87,7 @@ abstract final class HomeVehicleSilhouetteGeometry {
 
   /// Logo roofline + realistic side profile — sport / BMW.
   static Path _sportSideBody() {
-    final roof = DriviqLogoGeometry.topStroke();
+    final roof = DriviqSplashAnimation.topStroke();
     return Path()
       ..moveTo(0.92, 0.58)
       ..lineTo(0.965, 0.50)

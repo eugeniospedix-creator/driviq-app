@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/vehicle_artwork_paths.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/component_fault.dart';
 import '../../../domain/entities/vehicle.dart';
-import 'vehicle_fault_hotspot.dart';
-import 'vehicle_hero_viewport.dart';
+import '../../../domain/entities/vehicle_studio_model.dart';
+import '../../../domain/enums/driviq_weather_mood.dart';
+import 'interactive_user_vehicle_model.dart';
+import 'vehicle_weather_scene.dart';
 
-/// Studio-framed vehicle — stable viewport, optional fault hotspots on diagnosis/report.
-class DriviqStudioVehicle extends StatefulWidget {
+/// Studio-framed vehicle — stable user photo 2.5D, optional fault hotspots.
+class DriviqStudioVehicle extends StatelessWidget {
   const DriviqStudioVehicle({
     super.key,
     required this.vehicle,
@@ -19,6 +20,9 @@ class DriviqStudioVehicle extends StatefulWidget {
     this.faults = const [],
     this.highlightedFault,
     this.onFaultSelected,
+    this.onAddPhoto,
+    this.mood,
+    this.weatherEffectsEnabled = false,
   });
 
   final Vehicle vehicle;
@@ -29,25 +33,15 @@ class DriviqStudioVehicle extends StatefulWidget {
   final List<ComponentFault> faults;
   final ComponentFault? highlightedFault;
   final ValueChanged<ComponentFault>? onFaultSelected;
-
-  @override
-  State<DriviqStudioVehicle> createState() => _DriviqStudioVehicleState();
-}
-
-class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    for (final path in VehicleArtworkPaths.allHeroes) {
-      precacheImage(AssetImage(path), context);
-    }
-  }
+  final VoidCallback? onAddPhoto;
+  final DriviqWeatherMood? mood;
+  final bool weatherEffectsEnabled;
 
   @override
   Widget build(BuildContext context) {
-    final accent = widget.highlightColor ?? DQ.cyan;
-    final h = widget.height;
-    final viewportHeight = h * 0.68;
+    final accent = highlightColor ?? DQ.cyan;
+    final h = height;
+    final viewportHeight = h * 0.82;
 
     return SizedBox(
       height: h,
@@ -66,18 +60,18 @@ class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
               ),
             ),
           ),
-          if (widget.showLiveAtmosphere)
+          if (showLiveAtmosphere)
             Positioned(
-              top: h * 0.08,
-              left: h * 0.04,
-              right: h * 0.04,
-              height: h * 0.45,
+              top: h * 0.06,
+              left: h * 0.03,
+              right: h * 0.03,
+              height: h * 0.50,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
                     center: const Alignment(0, 0.1),
                     radius: 0.95,
-                    colors: [accent.withValues(alpha: 0.06), Colors.transparent],
+                    colors: [accent.withValues(alpha: 0.08), Colors.transparent],
                   ),
                 ),
               ),
@@ -87,46 +81,33 @@ class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
             child: SizedBox(
               height: viewportHeight,
               width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  VehicleHeroViewport(
-                    vehicle: widget.vehicle,
-                    enableIdleMotion: true,
+              child: ClipRect(
+                child: VehicleWeatherScene(
+                  mood: mood,
+                  accent: accent,
+                  effectsEnabled: weatherEffectsEnabled,
+                  child: InteractiveUserVehicleModel(
+                    model: VehicleStudioModel.fromVehicle(vehicle),
+                    accent: accent,
+                    mood: mood,
+                    showReflection: true,
+                    interactive: interactive,
+                    weatherEffectsEnabled: weatherEffectsEnabled,
+                    faults: faults,
+                    highlightedFault: highlightedFault,
+                    onFaultSelected: onFaultSelected,
+                    onAddPhoto: onAddPhoto,
                   ),
-                  if (widget.faults.isNotEmpty)
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final size = Size(constraints.maxWidth, constraints.maxHeight);
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          children: widget.faults.map((fault) {
-                            final selected = widget.highlightedFault?.id == fault.id;
-                            final hotspotSize = selected ? 38.0 : 28.0;
-                            return Positioned(
-                              left: fault.anchor.x * size.width - hotspotSize / 2,
-                              top: fault.anchor.y * size.height - hotspotSize / 2,
-                              child: VehicleFaultHotspot(
-                                severity: fault.severity,
-                                selected: selected,
-                                interactive: widget.interactive,
-                                onTap: () => widget.onFaultSelected?.call(fault),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
-                ],
+                ),
               ),
             ),
           ),
-          if (widget.showLiveAtmosphere)
+          if (showLiveAtmosphere)
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
-              height: h * 0.28,
+              height: h * 0.30,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -134,8 +115,8 @@ class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      DQ.voidBlack.withValues(alpha: 0.50),
-                      DQ.voidBlack.withValues(alpha: 0.92),
+                      DQ.voidBlack.withValues(alpha: 0.55),
+                      DQ.voidBlack.withValues(alpha: 0.94),
                     ],
                     stops: const [0.0, 0.50, 1.0],
                   ),

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/dq_tokens.dart';
 import '../../../domain/entities/vehicle.dart';
 import '../../../domain/entities/vehicle_health.dart';
+import '../../../domain/enums/driviq_weather_mood.dart';
 import '../health/health_ring.dart';
 import '../vehicle/vehicle_hero_stage.dart';
 
@@ -14,12 +15,18 @@ class VehicleGarageCard extends StatelessWidget {
     required this.health,
     required this.onTap,
     this.isPrimary = false,
+    this.onPhotoTap,
+    this.mood,
+    this.weatherEffectsEnabled = false,
   });
 
   final Vehicle vehicle;
   final VehicleHealth health;
   final VoidCallback onTap;
   final bool isPrimary;
+  final VoidCallback? onPhotoTap;
+  final DriviqWeatherMood? mood;
+  final bool weatherEffectsEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +65,27 @@ class VehicleGarageCard extends StatelessWidget {
                   compact: true,
                   interactive: false,
                   borderRadius: 0,
+                  mood: mood,
+                  weatherEffectsEnabled: weatherEffectsEnabled,
+                  onAddPhoto: onPhotoTap,
                 ),
+                if (onPhotoTap != null)
+                  Positioned(
+                    right: 14,
+                    bottom: 14,
+                    child: Material(
+                      color: DQ.voidBlack.withValues(alpha: 0.62),
+                      borderRadius: BorderRadius.circular(12),
+                      child: InkWell(
+                        onTap: onPhotoTap,
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8),
+                          child: Icon(Icons.photo_camera_rounded, color: DQ.cyan, size: 20),
+                        ),
+                      ),
+                    ),
+                  ),
                 if (isPrimary)
                   Positioned(
                     top: 14,

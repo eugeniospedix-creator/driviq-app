@@ -49,6 +49,12 @@
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Driviq analyzes engine and vibration acoustics through your microphone to detect mechanical anomalies. Audio is processed on-device.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Driviq uses your location to display live weather conditions in your vehicle studio scene.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Driviq needs camera access to photograph your vehicle and build your personal digital twin.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Driviq needs photo library access so you can choose a picture of your vehicle.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

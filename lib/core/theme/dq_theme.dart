@@ -16,12 +16,20 @@ abstract final class DriviqTheme {
       outline: DQ.line,
     );
 
+    final textTheme = DqTypography.dark.apply(
+      bodyColor: DQ.textPrimary,
+      displayColor: DQ.textPrimary,
+      decoration: TextDecoration.none,
+      decorationColor: Colors.transparent,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: DQ.voidBlack,
       colorScheme: scheme,
-      textTheme: DqTypography.dark,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
       appBarTheme: const AppBarTheme(

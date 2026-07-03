@@ -220,11 +220,11 @@ class WeatherVehicleAtmospherePainter extends CustomPainter {
   }
 
   void _paintRain(Canvas canvas, Size size, {required double intensity}) {
-    final count = (34 * particleScale * intensity).round().clamp(12, 56);
+    final count = (52 * particleScale * intensity).round().clamp(20, 80);
     final random = math.Random(7);
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.16 + intensity * 0.06)
-      ..strokeWidth = 1.0 + intensity * 0.25
+      ..color = Colors.white.withValues(alpha: 0.38 + intensity * 0.12)
+      ..strokeWidth = 1.6 + intensity * 0.4
       ..strokeCap = StrokeCap.round;
 
     for (var i = 0; i < count; i++) {
@@ -238,9 +238,9 @@ class WeatherVehicleAtmospherePainter extends CustomPainter {
   }
 
   void _paintSnowfall(Canvas canvas, Size size) {
-    final count = (28 * particleScale).round().clamp(10, 40);
+    final count = (42 * particleScale).round().clamp(16, 56);
     final random = math.Random(11);
-    final paint = Paint()..color = Colors.white.withValues(alpha: 0.58);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.82);
 
     for (var i = 0; i < count; i++) {
       final seed = random.nextDouble();

@@ -14,9 +14,12 @@ class HomeWeatherContext {
 
   static const fallback = HomeWeatherContext(
     mood: DriviqWeatherMood.unknown,
-    effectsEnabled: true,
+    effectsEnabled: false,
     isLive: false,
   );
+
+  /// Particle overlays (rain, snow, fog) — only when API returned live data.
+  bool get showEffects => isLive && effectsEnabled;
 
   HomeWeatherContext copyWith({
     DriviqWeatherMood? mood,

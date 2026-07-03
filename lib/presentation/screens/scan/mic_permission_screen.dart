@@ -13,8 +13,18 @@ class MicPermissionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return DqPage(
-      child: Padding(
+    return Scaffold(
+      backgroundColor: DQ.voidBlack,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: DQ.textPrimary),
+          onPressed: () => context.pop(),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: DqPage(
+        child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
             children: [
@@ -33,13 +43,26 @@ class MicPermissionScreen extends ConsumerWidget {
               const Text(
                 'Acoustic Intelligence',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: DQ.textPrimary, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.6),
+                style: TextStyle(
+                  color: DQ.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                  decoration: TextDecoration.none,
+                  decorationThickness: 0,
+                ),
               ),
               const SizedBox(height: 12),
               const Text(
                 'Driviq analyzes engine harmonics and vibration through your microphone. Audio is processed on-device and never stored when Privacy Mode is on.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: DQ.textSecondary, fontSize: 15, height: 1.45),
+                style: TextStyle(
+                  color: DQ.textSecondary,
+                  fontSize: 15,
+                  height: 1.45,
+                  decoration: TextDecoration.none,
+                  decorationThickness: 0,
+                ),
               ),
               const Spacer(),
               DqButton(
@@ -70,6 +93,7 @@ class MicPermissionScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
             ],
+          ),
         ),
       ),
     );

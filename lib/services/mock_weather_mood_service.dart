@@ -17,7 +17,7 @@ class MockWeatherMoodService implements WeatherMoodService {
     return HomeWeatherContext(
       mood: mood,
       effectsEnabled: true,
-      isLive: _debugMood == null,
+      isLive: false,
     );
   }
 

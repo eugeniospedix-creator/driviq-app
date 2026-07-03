@@ -90,12 +90,22 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
 
     return Scaffold(
       backgroundColor: DQ.voidBlack,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded, color: DQ.textPrimary),
+          onPressed: () async {
+            await ref.read(runScanUseCaseProvider).cancel();
+            if (context.mounted) context.pop();
+          },
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 12),
               const Text(
                 'LISTENING',
                 style: TextStyle(
@@ -103,6 +113,7 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
                   letterSpacing: 2.4,
                   fontWeight: FontWeight.w800,
                   fontSize: 12,
+                  decoration: TextDecoration.none,
                 ),
               ),
               const SizedBox(height: 24),
@@ -118,7 +129,11 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
                   error: (_, _) => Center(
                     child: Text(
                       'Vehicle unavailable',
-                      style: TextStyle(color: DQ.textMuted.withValues(alpha: 0.85), fontSize: 14),
+                      style: TextStyle(
+                        color: DQ.textMuted.withValues(alpha: 0.85),
+                        fontSize: 14,
+                        decoration: TextDecoration.none,
+                      ),
                     ),
                   ),
                   data: (vehicle) => vehicle == null
@@ -147,12 +162,18 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.6,
                   height: 1.2,
+                  decoration: TextDecoration.none,
+                  decorationThickness: 0,
                 ),
               ),
               const SizedBox(height: 10),
               const Text(
                 'Park safely. Do not interact while driving.',
-                style: TextStyle(color: DQ.textMuted, fontSize: 14),
+                style: TextStyle(
+                  color: DQ.textMuted,
+                  fontSize: 14,
+                  decoration: TextDecoration.none,
+                ),
               ),
               const SizedBox(height: 28),
               ScanProgressBar(progress: _progress),
@@ -164,6 +185,7 @@ class _ScanRunningScreenState extends ConsumerState<ScanRunningScreen> {
                   fontWeight: FontWeight.w800,
                   fontSize: 14,
                   letterSpacing: 1,
+                  decoration: TextDecoration.none,
                 ),
               ),
               const SizedBox(height: 20),

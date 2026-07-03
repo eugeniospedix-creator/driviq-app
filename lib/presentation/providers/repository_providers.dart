@@ -65,5 +65,5 @@ final audioAnalysisServiceProvider = Provider<AudioAnalysisService>((ref) {
 });
 
 final aiDiagnosisServiceProvider = Provider<AiDiagnosisService>((ref) {
-  return SignalDiagnosisService(ref.watch(diagnosisRepositoryProvider));
+  return SignalDiagnosisService();
 });

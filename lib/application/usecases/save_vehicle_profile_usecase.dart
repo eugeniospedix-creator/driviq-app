@@ -13,6 +13,8 @@ class SaveVehicleProfileInput {
     required this.year,
     this.isPrimary = true,
     this.createdAt,
+    this.photoPath,
+    this.mileageKm,
   });
 
   final String? existingId;
@@ -21,6 +23,8 @@ class SaveVehicleProfileInput {
   final int year;
   final bool isPrimary;
   final DateTime? createdAt;
+  final String? photoPath;
+  final int? mileageKm;
 }
 
 class SaveVehicleProfileUseCase {
@@ -40,12 +44,20 @@ class SaveVehicleProfileUseCase {
     final catalog = VehicleCatalog.resolveOrDefault(make, model);
     final now = DateTime.now();
 
+    String? photoPath = input.photoPath;
+    if (photoPath == null && input.existingId != null) {
+      final existing = await _vehicles.getById(input.existingId!);
+      photoPath = existing?.photoPath;
+    }
+
     final vehicle = Vehicle(
       id: input.existingId ?? _uuid.v4(),
       make: make,
       model: model,
       year: input.year,
+      mileageKm: input.mileageKm,
       modelAssetKey: catalog.assetKey,
+      photoPath: photoPath,
       isPrimary: input.isPrimary,
       createdAt: input.createdAt ?? now,
       updatedAt: now,

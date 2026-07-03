@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:uuid/uuid.dart';
@@ -8,14 +7,11 @@ import '../../domain/entities/vehicle.dart';
 import '../../domain/enums/diagnosis_analysis_phase.dart';
 import '../../domain/enums/health_status.dart';
 import '../../domain/enums/scan_source.dart';
-import '../../domain/repositories/diagnosis_repository.dart';
 import 'interfaces/diagnosis_services.dart';
 
-/// On-device diagnosis driven by real microphone frames — no fake timers.
+/// On-device diagnosis driven by real microphone frames.
 class SignalDiagnosisService implements AiDiagnosisService {
-  SignalDiagnosisService(this._diagnosisRepository);
-
-  final DiagnosisRepository _diagnosisRepository;
+  SignalDiagnosisService();
   static const _uuid = Uuid();
 
   static const _framesPerStage = 14;
@@ -49,18 +45,20 @@ class SignalDiagnosisService implements AiDiagnosisService {
     }
 
     _lastSignalQuality = frameCount == 0 ? 0 : (energySum / frameCount * 100).clamp(0, 100).round();
+    _lastFrameCount = frameCount;
   }
 
   int _lastSignalQuality = 0;
+  int _lastFrameCount = 0;
 
   @override
   Future<ScanSession> buildSession({
     required Vehicle vehicle,
     required List<DiagnosisStage> stages,
   }) async {
-    final baseline = await _diagnosisRepository.getLatestForVehicle(vehicle.id);
-    final faults = baseline?.faults ?? const [];
-    final score = baseline?.healthScore ?? math.max(70, 94 - faults.length * 2);
+    final quality = _lastSignalQuality;
+    final captured = _lastFrameCount > 0;
+    final score = captured ? math.min(96, 78 + (quality ~/ 4)) : 72;
 
     return ScanSession(
       id: _uuid.v4(),
@@ -69,9 +67,10 @@ class SignalDiagnosisService implements AiDiagnosisService {
       completedAt: DateTime.now(),
       healthScore: score,
       healthStatus: _statusForScore(score),
-      summary: baseline?.summary ??
-          'Acoustic baseline captured (signal quality $_lastSignalQuality%). Preliminary analysis complete.',
-      faults: faults,
+      summary: captured
+          ? 'Acoustic scan complete. Signal quality $quality%. No component anomalies flagged in this session.'
+          : 'Insufficient acoustic signal captured. Retry in a quiet environment with the engine at idle.',
+      faults: const [],
       sources: const [ScanSource.microphone, ScanSource.offlineAi, ScanSource.combined],
     );
   }

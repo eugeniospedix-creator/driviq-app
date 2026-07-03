@@ -1,23 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../application/providers/usecase_providers.dart';
 import '../../../application/usecases/save_vehicle_profile_usecase.dart';
-import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
-import '../../../domain/catalog/vehicle_catalog.dart';
 import '../../../domain/entities/vehicle.dart';
-import '../../../domain/entities/vehicle_catalog_entry.dart';
 import '../../../domain/errors/app_exception.dart';
-import '../../providers/repository_providers.dart';
-import '../../providers/settings_providers.dart';
 import '../../providers/vehicle_providers.dart';
 import '../../widgets/buttons/dq_button.dart';
 import '../../widgets/inputs/dq_text_field.dart';
-import '../../widgets/scan/vehicle_identity_picker.dart';
-import '../../widgets/vehicle/vehicle_hero_stage.dart';
+import '../../widgets/shell/dq_page.dart';
+import '../../widgets/vehicle/vehicle_photo_capture.dart';
 
 class ScanScreen extends ConsumerStatefulWidget {
   const ScanScreen({super.key});
@@ -29,155 +25,94 @@ class ScanScreen extends ConsumerStatefulWidget {
 class _ScanScreenState extends ConsumerState<ScanScreen> {
   static const _uuid = Uuid();
 
-  VehicleCatalogEntry? _selectedEntry;
-  int _year = VehicleCatalog.bmwM340i.defaultYear;
-  Vehicle? _previewVehicle;
-  bool _customMode = false;
-  bool _saving = false;
+  final _make = TextEditingController();
+  final _model = TextEditingController();
+  final _year = TextEditingController();
+  final _km = TextEditingController();
 
-  late final TextEditingController _customMake;
-  late final TextEditingController _customModel;
+  String? _vehicleId;
+  String? _photoPath;
+  DateTime? _createdAt;
+  bool _saving = false;
+  bool _addingAnother = false;
 
   @override
   void initState() {
     super.initState();
-    _customMake = TextEditingController();
-    _customModel = TextEditingController();
-    _loadPrimary();
-  }
-
-  Future<void> _loadPrimary() async {
-    final primary = await ref.read(primaryVehicleProvider.future);
-    if (!mounted || primary == null) {
-      _selectCatalogEntry(VehicleCatalog.bmwM340i);
-      return;
-    }
-
-    final catalog = VehicleCatalog.byAssetKey(primary.modelAssetKey) ??
-        VehicleCatalog.resolve(primary.make, primary.model) ??
-        VehicleCatalog.bmwM340i;
-
-    setState(() {
-      _selectedEntry = catalog;
-      _year = primary.year;
-      _previewVehicle = primary;
-      _customMode = false;
-    });
+    _year.text = DateTime.now().year.toString();
   }
 
   @override
   void dispose() {
-    _customMake.dispose();
-    _customModel.dispose();
+    _make.dispose();
+    _model.dispose();
+    _year.dispose();
+    _km.dispose();
     super.dispose();
   }
 
-  void _selectCatalogEntry(VehicleCatalogEntry entry) {
-    setState(() {
-      _customMode = false;
-      _selectedEntry = entry;
-      _year = entry.defaultYear;
-      _previewVehicle = _buildPreview(
-        make: entry.make,
-        model: entry.model,
-        year: entry.defaultYear,
-        assetKey: entry.assetKey,
-      );
-    });
+  void _resetDraft() {
+    _vehicleId = _uuid.v4();
+    _photoPath = null;
+    _createdAt = null;
+    _make.clear();
+    _model.clear();
+    _year.text = DateTime.now().year.toString();
+    _km.clear();
   }
 
-  void _selectYear(int year) {
-    setState(() {
-      _year = year;
-      if (_customMode) {
-        _previewVehicle = _buildPreview(
-          make: _customMake.text,
-          model: _customModel.text,
-          year: year,
-          assetKey: VehicleCatalog.resolveOrDefault(_customMake.text, _customModel.text).assetKey,
-        );
-      } else if (_selectedEntry != null) {
-        _previewVehicle = _buildPreview(
-          make: _selectedEntry!.make,
-          model: _selectedEntry!.model,
-          year: year,
-          assetKey: _selectedEntry!.assetKey,
-        );
-      }
-    });
-  }
-
-  void _activateCustomMode() {
-    setState(() {
-      _customMode = true;
-      _customMake.text = _previewVehicle?.make ?? '';
-      _customModel.text = _previewVehicle?.model ?? '';
-      _previewVehicle = _buildPreview(
-        make: _customMake.text,
-        model: _customModel.text,
-        year: _year,
-        assetKey: VehicleCatalog.resolveOrDefault(_customMake.text, _customModel.text).assetKey,
-      );
-    });
-  }
-
-  void _updateCustomPreview() {
-    if (!_customMode) return;
-    setState(() {
-      _previewVehicle = _buildPreview(
-        make: _customMake.text,
-        model: _customModel.text,
-        year: _year,
-        assetKey: VehicleCatalog.resolveOrDefault(_customMake.text, _customModel.text).assetKey,
-      );
-    });
-  }
-
-  Vehicle _buildPreview({
-    required String make,
-    required String model,
-    required int year,
-    required String assetKey,
-  }) {
-    final now = DateTime.now();
-    return Vehicle(
-      id: _previewVehicle?.id ?? _uuid.v4(),
-      make: make.trim().isEmpty ? 'Your' : make.trim(),
-      model: model.trim().isEmpty ? 'Vehicle' : model.trim(),
-      year: year,
-      modelAssetKey: assetKey,
-      isPrimary: true,
-      createdAt: _previewVehicle?.createdAt ?? now,
-      updatedAt: now,
+  Future<void> _pickPhoto() async {
+    final vehicleId = _vehicleId ??= _uuid.v4();
+    final path = await pickAndSaveOriginalPhoto(
+      context: context,
+      ref: ref,
+      vehicleId: vehicleId,
     );
+    if (path != null && mounted) {
+      setState(() {
+        _vehicleId = vehicleId;
+        _photoPath = path;
+      });
+    }
   }
 
-  Future<void> _beginScan() async {
-    final canScan = ref.read(canRunScanProvider);
-    if (!canScan) {
-      if (!mounted) return;
+  Future<void> _saveVehicle() async {
+    final make = _make.text.trim();
+    final model = _model.text.trim();
+    if (make.isEmpty || model.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Enable microphone and AI in Settings to begin analysis.'),
+          content: Text('Enter make and model.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
       return;
     }
 
-    final vehicle = _previewVehicle;
-    if (vehicle == null) return;
+    final year = int.tryParse(_year.text.trim());
+    if (year == null || year < 1980 || year > DateTime.now().year + 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a valid year.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     setState(() => _saving = true);
     try {
+      final mileage = int.tryParse(_km.text.trim());
       final saved = await ref.read(saveVehicleProfileUseCaseProvider).execute(
             SaveVehicleProfileInput(
-              existingId: vehicle.id,
-              make: vehicle.make,
-              model: vehicle.model,
-              year: vehicle.year,
+              existingId: _vehicleId,
+              make: make,
+              model: model,
+              year: year,
+              mileageKm: mileage,
               isPrimary: true,
-              createdAt: vehicle.createdAt,
+              createdAt: _createdAt,
+              photoPath: _photoPath,
             ),
           );
 
@@ -186,14 +121,19 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       ref.invalidate(garageOverviewProvider);
 
       if (!mounted) return;
-      final granted = await ref.read(microphonePermissionServiceProvider).isGranted;
-      if (!mounted) return;
-      if (granted) {
-        context.push(AppRoutes.scanRunning);
-      } else {
-        context.push(AppRoutes.scanPermission);
-      }
-      setState(() => _previewVehicle = saved);
+      setState(() {
+        _addingAnother = false;
+        _vehicleId = saved.id;
+        _photoPath = saved.photoPath;
+        _createdAt = saved.createdAt;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vehicle saved.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } on AppException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -204,154 +144,260 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     }
   }
 
+  bool get _hasPhoto =>
+      _photoPath != null && _photoPath!.isNotEmpty && File(_photoPath!).existsSync();
+
   @override
   Widget build(BuildContext context) {
-    final vehicle = _previewVehicle;
-    final canScan = ref.watch(canRunScanProvider);
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final primaryAsync = ref.watch(primaryVehicleProvider);
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [DQ.voidBlack, DQ.graphite, DQ.graphite2],
-        ),
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (vehicle != null)
-            Positioned.fill(
-              child: LayoutBuilder(
-                builder: (context, constraints) => VehicleHeroStage(
-                  vehicle: vehicle,
-                  height: constraints.maxHeight,
-                  highlightColor: DQ.cyan,
-                ),
-              ),
-            ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    DQ.voidBlack.withValues(alpha: 0.15),
-                    Colors.transparent,
-                    DQ.voidBlack.withValues(alpha: 0.88),
-                    DQ.voidBlack,
-                  ],
-                  stops: const [0.0, 0.28, 0.72, 1.0],
-                ),
-              ),
-            ),
+    return DqPage(
+      child: primaryAsync.when(
+        loading: () => const Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 2, color: DQ.cyan),
           ),
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(22, 8, 22, 0),
-                  child: Text(
-                    'Vehicle Identity',
-                    style: TextStyle(
-                      color: DQ.textMuted,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
-                    ),
-                  ),
+        ),
+        error: (_, _) => _buildSetupForm(),
+        data: (primary) {
+          if (primary != null && !_addingAnother) {
+            return _SavedVehicleView(
+              vehicle: primary,
+              onAddAnother: () {
+                setState(() {
+                  _addingAnother = true;
+                  _resetDraft();
+                });
+              },
+            );
+          }
+          return _buildSetupForm();
+        },
+      ),
+    );
+  }
+
+  Widget _buildSetupForm() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
+      children: [
+        _PhotoPickerTile(
+          hasPhoto: _hasPhoto,
+          photoPath: _photoPath,
+          enabled: !_saving,
+          onTap: _pickPhoto,
+        ),
+        const SizedBox(height: 22),
+        DqTextField(controller: _make, label: 'Make', hint: 'e.g. BMW'),
+        const SizedBox(height: 16),
+        DqTextField(controller: _model, label: 'Model', hint: 'e.g. 320d'),
+        const SizedBox(height: 16),
+        DqTextField(
+          controller: _year,
+          label: 'Year',
+          hint: '2024',
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 16),
+        DqTextField(
+          controller: _km,
+          label: 'Kilometres',
+          hint: '48200',
+          keyboardType: TextInputType.number,
+        ),
+        const SizedBox(height: 28),
+        DqButton(
+          label: _saving ? 'SAVING…' : 'SAVE VEHICLE',
+          icon: Icons.check_rounded,
+          enabled: !_saving,
+          onTap: _saving ? null : _saveVehicle,
+        ),
+      ],
+    );
+  }
+}
+
+class _SavedVehicleView extends StatelessWidget {
+  const _SavedVehicleView({
+    required this.vehicle,
+    required this.onAddAnother,
+  });
+
+  final Vehicle vehicle;
+  final VoidCallback onAddAnother;
+
+  bool get _hasPhoto =>
+      vehicle.photoPath != null &&
+      vehicle.photoPath!.isNotEmpty &&
+      File(vehicle.photoPath!).existsSync();
+
+  @override
+  Widget build(BuildContext context) {
+    final mileage = vehicle.mileageKm;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(22, 18, 22, 120),
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(DQ.radiusLg),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(DQ.radiusLg)),
+                child: AspectRatio(
+                  aspectRatio: 16 / 10,
+                  child: _hasPhoto
+                      ? Image.file(
+                          File(vehicle.photoPath!),
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                        )
+                      : ColoredBox(
+                          color: DQ.graphite3,
+                          child: Icon(
+                            Icons.directions_car_filled_rounded,
+                            size: 56,
+                            color: DQ.textMuted.withValues(alpha: 0.5),
+                          ),
+                        ),
                 ),
-                if (vehicle != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            vehicle.displayName,
-                            style: const TextStyle(
-                              color: DQ.textPrimary,
-                              fontSize: 34,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -1.1,
-                              height: 1.05,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '$_year • Acoustic twin ready',
-                            style: const TextStyle(color: DQ.textSecondary, fontSize: 14),
-                          ),
-                        ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${vehicle.make} ${vehicle.model}',
+                      style: const TextStyle(
+                        color: DQ.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                        decoration: TextDecoration.none,
+                        decorationThickness: 0,
                       ),
                     ),
-                const Spacer(),
-                Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.fromLTRB(22, 22, 22, 18 + bottomInset),
-                    decoration: BoxDecoration(
-                      color: DQ.graphite.withValues(alpha: 0.94),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(DQ.radiusXl)),
-                      border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.45),
-                          blurRadius: 40,
-                          offset: const Offset(0, -12),
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+                    Text(
+                      [
+                        vehicle.year.toString(),
+                        if (mileage != null) '${_formatKm(mileage)} km',
+                      ].join(' · '),
+                      style: const TextStyle(
+                        color: DQ.textSecondary,
+                        fontSize: 15,
+                        decoration: TextDecoration.none,
+                        decorationThickness: 0,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        VehicleIdentityPicker(
-                          selected: _selectedEntry,
-                          year: _year,
-                          customActive: _customMode,
-                          onCatalogSelected: _selectCatalogEntry,
-                          onYearSelected: _selectYear,
-                          onCustomTap: _activateCustomMode,
-                        ),
-                        if (_customMode) ...[
-                          const SizedBox(height: 18),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DqTextField(
-                                  controller: _customMake,
-                                  label: 'Make',
-                                  onChanged: (_) => _updateCustomPreview(),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: DqTextField(
-                                  controller: _customModel,
-                                  label: 'Model',
-                                  onChanged: (_) => _updateCustomPreview(),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 22),
-                        DqButton(
-                          label: _saving ? 'PREPARING…' : 'BEGIN ANALYSIS',
-                          icon: Icons.mic_rounded,
-                          enabled: vehicle != null && canScan && !_saving,
-                          onTap: vehicle != null && canScan && !_saving ? _beginScan : null,
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Center(
+          child: TextButton(
+            onPressed: onAddAnother,
+            child: const Text(
+              '+ Add another vehicle',
+              style: TextStyle(
+                color: DQ.textMuted,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.none,
+                decorationThickness: 0,
+              ),
             ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  static String _formatKm(int km) {
+    final text = km.toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < text.length; i++) {
+      if (i > 0 && (text.length - i) % 3 == 0) buffer.write(' ');
+      buffer.write(text[i]);
+    }
+    return buffer.toString();
+  }
+}
+
+class _PhotoPickerTile extends StatelessWidget {
+  const _PhotoPickerTile({
+    required this.hasPhoto,
+    required this.photoPath,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final bool hasPhoto;
+  final String? photoPath;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.04),
+      borderRadius: BorderRadius.circular(DQ.radiusLg),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(DQ.radiusLg),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: hasPhoto
+                      ? Image.file(
+                          File(photoPath!),
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                        )
+                      : ColoredBox(
+                          color: DQ.graphite3,
+                          child: Icon(
+                            Icons.add_a_photo_rounded,
+                            color: DQ.cyan.withValues(alpha: 0.85),
+                            size: 28,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Text(
+                  'Add your vehicle photo',
+                  style: TextStyle(
+                    color: DQ.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    decoration: TextDecoration.none,
+                    decorationThickness: 0,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: DQ.textMuted.withValues(alpha: 0.7)),
+            ],
+          ),
+        ),
       ),
     );
   }

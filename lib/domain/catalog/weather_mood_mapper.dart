@@ -28,4 +28,23 @@ abstract final class WeatherMoodMapper {
   static DriviqWeatherMood fromCoordinatesFallback({required bool isNight}) {
     return isNight ? DriviqWeatherMood.clearNight : DriviqWeatherMood.clearDay;
   }
+
+  /// Maps WMO weather codes from Open-Meteo to [DriviqWeatherMood].
+  static DriviqWeatherMood fromOpenMeteoCode(int? code, {required bool isDay}) {
+    if (code == null) return DriviqWeatherMood.unknown;
+
+    if (code == 0) {
+      return isDay ? DriviqWeatherMood.clearDay : DriviqWeatherMood.clearNight;
+    }
+    if (code == 1 || code == 2 || code == 3) return DriviqWeatherMood.cloudy;
+    if (code == 45 || code == 48) return DriviqWeatherMood.fog;
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) {
+      return DriviqWeatherMood.rain;
+    }
+    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) {
+      return DriviqWeatherMood.snow;
+    }
+    if (code >= 95 && code <= 99) return DriviqWeatherMood.storm;
+    return DriviqWeatherMood.unknown;
+  }
 }

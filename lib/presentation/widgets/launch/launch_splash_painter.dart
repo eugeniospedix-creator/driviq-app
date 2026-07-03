@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/dq_tokens.dart';
-import 'driviq_logo_geometry.dart';
+import 'driviq_splash_animation.dart';
 
 /// Cyan glow + heartbeat trace drawn over the approved static icon — overlay only.
 class LaunchSplashOverlayPainter extends CustomPainter {
@@ -22,7 +22,7 @@ class LaunchSplashOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final bounds = Rect.fromLTWH(0, 0, size.width, size.height);
-    final bottom = DriviqLogoGeometry.scaledBottom(size, bounds);
+    final bottom = DriviqSplashAnimation.scaledBottom(size, bounds);
 
     if (glow > 0) {
       canvas.drawCircle(
@@ -44,7 +44,7 @@ class LaunchSplashOverlayPainter extends CustomPainter {
 
     final lineT = lineProgress.clamp(0.0, 1.0);
     if (lineT > 0) {
-      final partial = DriviqLogoGeometry.extractPartial(bottom, lineT);
+      final partial = DriviqSplashAnimation.extractPartial(bottom, lineT);
       _paintStroke(canvas, partial, width: 2.4, glow: 10, alpha: 0.75);
     }
 

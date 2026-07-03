@@ -40,4 +40,15 @@ void main() {
     expect(WeatherMoodMapper.isNightHour(5), isTrue);
     expect(WeatherMoodMapper.isNightHour(12), isFalse);
   });
+
+  test('maps Open-Meteo WMO codes to moods', () {
+    expect(WeatherMoodMapper.fromOpenMeteoCode(0, isDay: true), DriviqWeatherMood.clearDay);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(0, isDay: false), DriviqWeatherMood.clearNight);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(3, isDay: true), DriviqWeatherMood.cloudy);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(45, isDay: true), DriviqWeatherMood.fog);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(61, isDay: true), DriviqWeatherMood.rain);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(71, isDay: true), DriviqWeatherMood.snow);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(95, isDay: true), DriviqWeatherMood.storm);
+    expect(WeatherMoodMapper.fromOpenMeteoCode(null, isDay: true), DriviqWeatherMood.unknown);
+  });
 }
