@@ -5,12 +5,14 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/dq_tokens.dart';
+import '../../../domain/entities/home_weather_context.dart';
 import '../../../domain/entities/scan_session.dart';
 import '../../../domain/entities/vehicle.dart';
 import '../../../domain/entities/vehicle_health.dart';
 import '../../providers/repository_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/vehicle_providers.dart';
+import '../../providers/weather_providers.dart';
 import '../../widgets/async/dq_async_view.dart';
 import '../../widgets/buttons/dq_button.dart';
 import '../../widgets/health/health_ring.dart';
@@ -95,6 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           final healthAsync = ref.watch(vehicleHealthProvider(vehicle.id));
           final scanAsync = ref.watch(latestScanProvider(vehicle.id));
+          final weather = ref.watch(homeWeatherContextProvider).value ?? HomeWeatherContext.fallback;
 
           return DqAsyncBody(
             asyncValue: healthAsync,
@@ -104,6 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               vehicle: vehicle,
               health: health,
               scan: scanAsync.value,
+              weather: weather,
               onQuickScan: _quickScan,
             ),
           );
@@ -120,6 +124,7 @@ class _CinematicHome extends StatelessWidget {
     required this.vehicle,
     required this.health,
     required this.scan,
+    required this.weather,
     required this.onQuickScan,
   });
 
@@ -128,6 +133,7 @@ class _CinematicHome extends StatelessWidget {
   final Vehicle vehicle;
   final VehicleHealth health;
   final ScanSession? scan;
+  final HomeWeatherContext weather;
   final VoidCallback onQuickScan;
 
   @override
@@ -148,6 +154,7 @@ class _CinematicHome extends StatelessWidget {
                     vehicle: vehicle,
                     height: heroHeight,
                     highlightColor: healthColor,
+                    weather: weather,
                   ),
                   Positioned(
                     top: 18,

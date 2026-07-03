@@ -13,11 +13,13 @@ class VehicleHeroStage extends StatelessWidget {
     this.height,
     this.faults = const [],
     this.scanning = false,
-    this.interactive = true,
+    this.interactive = false,
     this.showGlow = true,
     this.compact = false,
     this.highlightColor,
     this.borderRadius = 0,
+    this.highlightedFault,
+    this.onFaultSelected,
   });
 
   final Vehicle vehicle;
@@ -29,6 +31,8 @@ class VehicleHeroStage extends StatelessWidget {
   final bool compact;
   final Color? highlightColor;
   final double borderRadius;
+  final ComponentFault? highlightedFault;
+  final ValueChanged<ComponentFault>? onFaultSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +81,10 @@ class VehicleHeroStage extends StatelessWidget {
                 height: h,
                 highlightColor: highlightColor,
                 showLiveAtmosphere: showGlow,
+                interactive: interactive,
+                faults: faults,
+                highlightedFault: highlightedFault,
+                onFaultSelected: onFaultSelected,
               ),
             ),
             Positioned.fill(

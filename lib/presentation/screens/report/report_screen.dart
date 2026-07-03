@@ -63,6 +63,12 @@ class ReportScreen extends ConsumerWidget {
                       vehicle: vehicle,
                       height: 280,
                       highlightColor: DQ.healthColor(scan.healthScore),
+                      interactive: true,
+                      faults: faults,
+                      highlightedFault: selected,
+                      onFaultSelected: (fault) {
+                        ref.read(selectedFaultIdProvider.notifier).state = fault.id;
+                      },
                     ),
                   ),
                   const SizedBox(height: 18),

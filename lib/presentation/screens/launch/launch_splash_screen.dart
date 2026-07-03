@@ -3,8 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/dq_tokens.dart';
+import '../../widgets/launch/launch_splash_painter.dart';
 
-/// Launch splash — static approved Driviq logo, brief fade, then hand off to app.
+/// Premium launch — static approved icon with subtle cyan glow and heartbeat trace.
 class LaunchSplashScreen extends StatefulWidget {
   const LaunchSplashScreen({
     super.key,
@@ -15,7 +16,7 @@ class LaunchSplashScreen extends StatefulWidget {
   final bool bootstrapReady;
   final VoidCallback onComplete;
 
-  static const duration = Duration(milliseconds: 1400);
+  static const duration = Duration(milliseconds: 1800);
 
   @override
   State<LaunchSplashScreen> createState() => _LaunchSplashScreenState();
@@ -23,7 +24,10 @@ class LaunchSplashScreen extends StatefulWidget {
 
 class _LaunchSplashScreenState extends State<LaunchSplashScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
-  late final Animation<double> _logoFade;
+  late final Animation<double> _logoIn;
+  late final Animation<double> _glow;
+  late final Animation<double> _line;
+  late final Animation<double> _pulse;
   late final Animation<double> _exitFade;
 
   bool _holdFinished = false;
@@ -36,14 +40,29 @@ class _LaunchSplashScreenState extends State<LaunchSplashScreen> with SingleTick
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: LaunchSplashScreen.duration);
 
-    _logoFade = CurvedAnimation(
+    _logoIn = CurvedAnimation(
       parent: _ctrl,
-      curve: const Interval(0.0, 0.35, curve: Curves.easeOutCubic),
+      curve: const Interval(0.0, 0.38, curve: Curves.easeOutCubic),
+    );
+
+    _glow = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.05, 0.55, curve: Curves.easeOutCubic),
+    );
+
+    _line = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.28, 0.72, curve: Curves.easeInOutCubic),
+    );
+
+    _pulse = CurvedAnimation(
+      parent: _ctrl,
+      curve: const Interval(0.72, 0.88, curve: Curves.easeOutCubic),
     );
 
     _exitFade = CurvedAnimation(
       parent: _ctrl,
-      curve: const Interval(0.72, 1.0, curve: Curves.easeInCubic),
+      curve: const Interval(0.88, 1.0, curve: Curves.easeInCubic),
     );
 
     _ctrl.addStatusListener((status) {
@@ -89,28 +108,49 @@ class _LaunchSplashScreenState extends State<LaunchSplashScreen> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.sizeOf(context);
-    final logoSide = size.shortestSide * 0.34;
+    final logoSide = MediaQuery.sizeOf(context).shortestSide * 0.34;
 
     return Material(
       color: DQ.voidBlack,
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
-          final exiting = _ctrl.value > 0.72;
-          final opacity = exiting ? 1 - _exitFade.value : _logoFade.value;
+          final exiting = _ctrl.value > 0.88;
+          final screenOpacity = _reduceMotion ? 1.0 : (exiting ? 1 - _exitFade.value : 1.0);
+          final logoOpacity = _reduceMotion ? 1.0 : _logoIn.value;
+          final logoScale = _reduceMotion ? 1.0 : 0.94 + _logoIn.value * 0.06;
 
           return Opacity(
-            opacity: _reduceMotion ? 1 : opacity.clamp(0.0, 1.0),
+            opacity: screenOpacity.clamp(0.0, 1.0),
             child: Center(
               child: SizedBox(
                 width: logoSide,
                 height: logoSide,
-                child: Image.asset(
-                  _logoAsset,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  gaplessPlayback: true,
+                child: Stack(
+                  fit: StackFit.expand,
+                  alignment: Alignment.center,
+                  children: [
+                    Transform.scale(
+                      scale: logoScale,
+                      child: Opacity(
+                        opacity: logoOpacity.clamp(0.0, 1.0),
+                        child: Image.asset(
+                          _logoAsset,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          gaplessPlayback: true,
+                        ),
+                      ),
+                    ),
+                    if (!_reduceMotion)
+                      CustomPaint(
+                        painter: LaunchSplashOverlayPainter(
+                          glow: _glow.value,
+                          lineProgress: _line.value,
+                          pulse: _pulse.value,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

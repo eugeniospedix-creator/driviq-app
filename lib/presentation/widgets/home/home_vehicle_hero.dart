@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/vehicle_artwork_paths.dart';
 import '../../../core/theme/dq_tokens.dart';
+import '../../../domain/entities/home_weather_context.dart';
 import '../../../domain/entities/vehicle.dart';
+import 'weather_vehicle_atmosphere.dart';
 
-/// Home hero vehicle — static artwork, stable layout, no scroll-driven motion.
+/// Home hero vehicle — static artwork with optional weather atmosphere overlay.
 class HomeVehicleHero extends StatefulWidget {
   const HomeVehicleHero({
     super.key,
     required this.vehicle,
     required this.height,
     this.highlightColor,
+    this.weather = HomeWeatherContext.fallback,
   });
 
   final Vehicle vehicle;
   final double height;
   final Color? highlightColor;
+  final HomeWeatherContext weather;
 
   @override
   State<HomeVehicleHero> createState() => _HomeVehicleHeroState();
@@ -36,6 +40,7 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
     final h = widget.height;
     final carHeight = h * 0.66;
     final assetPath = VehicleArtworkPaths.heroFor(widget.vehicle);
+    final weather = widget.weather;
 
     return SizedBox(
       height: h,
@@ -52,6 +57,15 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
                 colors: [DQ.graphite2, DQ.voidBlack, DQ.voidBlack],
                 stops: [0.0, 0.45, 1.0],
               ),
+            ),
+          ),
+          Positioned.fill(
+            child: WeatherVehicleAtmosphere(
+              mood: weather.mood,
+              height: h,
+              effectsEnabled: weather.effectsEnabled,
+              layer: WeatherAtmosphereLayer.behindVehicle,
+              accentColor: accent,
             ),
           ),
           Positioned(
@@ -96,6 +110,15 @@ class _HomeVehicleHeroState extends State<HomeVehicleHero> {
               height: carHeight,
               width: double.infinity,
               child: _HeroImage(assetPath: assetPath),
+            ),
+          ),
+          Positioned.fill(
+            child: WeatherVehicleAtmosphere(
+              mood: weather.mood,
+              height: h,
+              effectsEnabled: weather.effectsEnabled,
+              layer: WeatherAtmosphereLayer.inFrontOfVehicle,
+              accentColor: accent,
             ),
           ),
           Positioned(

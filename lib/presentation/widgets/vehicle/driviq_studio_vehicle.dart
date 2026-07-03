@@ -1,10 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/vehicle_artwork_paths.dart';
 import '../../../core/theme/dq_tokens.dart';
+import '../../../domain/entities/component_fault.dart';
 import '../../../domain/entities/vehicle.dart';
+import '../../../domain/entities/vehicle_3d_view_state.dart';
+import 'vehicle_fault_hotspot.dart';
 
-/// Studio-framed vehicle — static PNG hero, same paths as Home.
+/// Studio-framed vehicle — static PNG hero with optional drag, zoom, and fault hotspots.
 class DriviqStudioVehicle extends StatefulWidget {
   const DriviqStudioVehicle({
     super.key,
@@ -13,6 +18,10 @@ class DriviqStudioVehicle extends StatefulWidget {
     this.highlightColor,
     this.emotionalHome = false,
     this.showLiveAtmosphere = true,
+    this.interactive = false,
+    this.faults = const [],
+    this.highlightedFault,
+    this.onFaultSelected,
   });
 
   final Vehicle vehicle;
@@ -20,18 +29,90 @@ class DriviqStudioVehicle extends StatefulWidget {
   final Color? highlightColor;
   final bool emotionalHome;
   final bool showLiveAtmosphere;
+  final bool interactive;
+  final List<ComponentFault> faults;
+  final ComponentFault? highlightedFault;
+  final ValueChanged<ComponentFault>? onFaultSelected;
 
   @override
   State<DriviqStudioVehicle> createState() => _DriviqStudioVehicleState();
 }
 
-class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
+class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> with SingleTickerProviderStateMixin {
+  Vehicle3DViewState _viewState = const Vehicle3DViewState(yaw: 0, pitch: 0, zoom: 1);
+  double _baseZoom = 1;
+  late final AnimationController _settle;
+  Animation<double>? _settleAnim;
+  double _settleStartYaw = 0;
+  double _settleStartPitch = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _settle = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+    _settle.addListener(_onSettleTick);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     for (final path in VehicleArtworkPaths.allHeroes) {
       precacheImage(AssetImage(path), context);
     }
+  }
+
+  @override
+  void dispose() {
+    _settle.removeListener(_onSettleTick);
+    _settle.dispose();
+    super.dispose();
+  }
+
+  void _onSettleTick() {
+    final t = Curves.easeOutCubic.transform(_settleAnim?.value ?? 1);
+    setState(() {
+      _viewState = _viewState.copyWith(
+        yaw: _settleStartYaw * (1 - t),
+        pitch: _settleStartPitch * (1 - t),
+      );
+    });
+  }
+
+  void _onScaleStart(ScaleStartDetails _) {
+    _settle.stop();
+    _baseZoom = _viewState.zoom;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (!widget.interactive) return;
+    setState(() {
+      _viewState = _viewState.copyWith(
+        yaw: (_viewState.yaw + details.focalPointDelta.dx * 0.0035).clamp(-0.42, 0.42),
+        pitch: (_viewState.pitch + details.focalPointDelta.dy * 0.0025).clamp(-0.28, 0.28),
+        zoom: (_baseZoom * details.scale).clamp(Vehicle3DViewState.minZoom, Vehicle3DViewState.maxZoom),
+      );
+    });
+  }
+
+  void _onScaleEnd(ScaleEndDetails _) {
+    if (!widget.interactive) return;
+    _settleStartYaw = _viewState.yaw;
+    _settleStartPitch = _viewState.pitch;
+    _settleAnim = CurvedAnimation(parent: _settle, curve: Curves.easeOutCubic);
+    _settle.forward(from: 0);
+  }
+
+  Matrix4 _vehicleTransform(Size size) {
+    final yawRad = _viewState.yaw * math.pi;
+    final pitchRad = _viewState.pitch * math.pi;
+    final lift = _viewState.pitch * size.height * 0.06;
+
+    return Matrix4.identity()
+      ..setEntry(3, 2, 0.0012)
+      ..translateByDouble(0, lift, 0, 1)
+      ..rotateY(yawRad)
+      ..rotateX(pitchRad * 0.35)
+      ..scaleByDouble(_viewState.zoom, _viewState.zoom, 1, 1);
   }
 
   @override
@@ -82,17 +163,61 @@ class _DriviqStudioVehicleState extends State<DriviqStudioVehicle> {
             child: SizedBox(
               height: carHeight,
               width: double.infinity,
-              child: Image.asset(
-                assetPath,
-                fit: BoxFit.contain,
-                filterQuality: FilterQuality.high,
-                gaplessPlayback: true,
-                errorBuilder: (_, _, _) => Image.asset(
-                  VehicleArtworkPaths.fallback,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  gaplessPlayback: true,
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final size = Size(constraints.maxWidth, constraints.maxHeight);
+                  final vehicleLayer = Transform(
+                    alignment: Alignment.center,
+                    transform: _vehicleTransform(size),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Image.asset(
+                          assetPath,
+                          width: size.width,
+                          height: size.height,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          gaplessPlayback: true,
+                          errorBuilder: (_, _, _) => Image.asset(
+                            VehicleArtworkPaths.fallback,
+                            width: size.width,
+                            height: size.height,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            gaplessPlayback: true,
+                          ),
+                        ),
+                        ...widget.faults.map((fault) {
+                          final selected = widget.highlightedFault?.id == fault.id;
+                          final dx = fault.anchor.x * size.width;
+                          final dy = fault.anchor.y * size.height;
+                          final hotspotSize = selected ? 38.0 : 28.0;
+                          return Positioned(
+                            left: dx - hotspotSize / 2,
+                            top: dy - hotspotSize / 2,
+                            child: VehicleFaultHotspot(
+                              severity: fault.severity,
+                              selected: selected,
+                              interactive: widget.interactive,
+                              onTap: () => widget.onFaultSelected?.call(fault),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  );
+
+                  if (!widget.interactive) return vehicleLayer;
+
+                  return GestureDetector(
+                    onScaleStart: _onScaleStart,
+                    onScaleUpdate: _onScaleUpdate,
+                    onScaleEnd: _onScaleEnd,
+                    behavior: HitTestBehavior.opaque,
+                    child: vehicleLayer,
+                  );
+                },
               ),
             ),
           ),
